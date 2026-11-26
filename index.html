@@ -26,14 +26,18 @@ h1{padding:24px 0 20px;font-size:clamp(27px,3vw,39px);letter-spacing:-.045em;lin
 .screen{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:93.13%;
   aspect-ratio:var(--display-width)/var(--display-height);overflow:hidden;border-radius:9.6cqi;
-  display:flex;flex-direction:column;background:#f5f5f6;
+  display:flex;flex-direction:column;background:#fff7f1;font-size:16px;
   --phone-ink:#28272c;--phone-muted:#67636a;--phone-line:#e8e7ea;--phone-accent:#c43a24;
 }
 .screen :focus-visible{outline-color:#b63c23}
-.phone-top{position:relative;flex:none;z-index:1;background:#f9f9fa;border-bottom:1px solid #e9e8eb}
+.phone-top{
+  position:relative;flex:none;z-index:1;border-bottom:1px solid #efdcd2;
+  background:radial-gradient(ellipse at top left,#f6e8fa 0%,transparent 57%),
+    radial-gradient(ellipse at top right,#ffd5be 0%,transparent 67%),#fff3e8;
+}
 .status-bar{
   height:clamp(32px,13cqi,47px);display:flex;align-items:center;justify-content:space-between;
-  padding:4px 7.5cqi 0;color:#201a17;font-size:12px;font-weight:760;letter-spacing:.02em;
+  padding:4px 7.5cqi 0;color:#201a17;font-size:inherit;font-weight:760;letter-spacing:.02em;
 }
 .island{
   position:absolute;top:3cqi;left:50%;transform:translateX(-50%);background:#17272b;
@@ -50,27 +54,21 @@ h1{padding:24px 0 20px;font-size:clamp(27px,3vw,39px);letter-spacing:-.045em;lin
   display:block;width:38px;height:38px;flex:none;object-fit:contain;border-radius:11px;
   background:#fff1e8;border:1px solid #f3e2d8;
 }
-.phone-title{font-size:17px;color:var(--phone-ink);font-weight:780;line-height:1.15;letter-spacing:.01em}
+.phone-title{font-size:inherit;color:var(--phone-ink);font-weight:780;line-height:1.15;letter-spacing:.01em}
 .new-chat{
-  min-height:34px;display:inline-flex;align-items:center;justify-content:center;gap:4px;flex:none;
-  color:#393438;background:#fff;border:1px solid #e9e8eb;border-radius:8px;padding:3px 7px;
-  font-size:12px;font-weight:660;white-space:nowrap;
+  min-height:40px;display:inline-flex;align-items:center;justify-content:center;gap:4px;flex:none;
+  color:#713a29;background:#fff8f2;border:1px solid #efd8c8;border-radius:8px;padding:3px 7px;
+  font-size:inherit;font-weight:660;white-space:nowrap;
 }
-.new-chat:hover{background:#f1f0f2}
+.new-chat:hover{background:#fff}
 .new-chat svg{width:14px;height:14px}
 .drug-context{
-  display:flex;align-items:center;gap:7px;justify-content:space-between;padding:6px 12px 7px;
-  min-height:33px;border-top:1px solid #eeeef0;background:#fff;color:#545056;font-size:11px;
+  display:flex;align-items:center;padding:6px 12px 8px;min-height:34px;
+  border-top:1px solid #fff9;background:#fff9f2a0;color:#714331;font-weight:660;
 }
-.drug-context span{font-weight:690}
-.drug-link{
-  display:inline-flex;align-items:center;gap:4px;padding:1px 0;color:#a33827;
-  font-size:11px;font-weight:700;text-underline-offset:2px;white-space:nowrap;
-}
-.drug-link svg{width:12px;height:12px}
 .messages{
   position:relative;min-height:0;flex:1;overflow:auto;padding:13px 10px 7px;
-  background:#f5f5f6;scrollbar-width:thin;overscroll-behavior:contain;z-index:2;
+  background:linear-gradient(#fff8f3,#fff3ed);scrollbar-width:thin;overscroll-behavior:contain;z-index:2;
 }
 .message{display:flex;justify-content:flex-start;margin:0 0 14px}
 .message.patient{justify-content:flex-end}
@@ -78,7 +76,7 @@ h1{padding:24px 0 20px;font-size:clamp(27px,3vw,39px);letter-spacing:-.045em;lin
 .patient .message-content{width:auto;max-width:83%}
 .bubble{
   display:block;width:100%;background:#fff;border:1px solid #fff;padding:11px 10px;
-  border-radius:13px;color:var(--phone-ink);font-size:14px;line-height:1.68;
+  border-radius:13px;color:var(--phone-ink);font-size:inherit;line-height:1.52;
   overflow-wrap:anywhere;white-space:pre-wrap;text-align:left;
 }
 .patient .bubble{
@@ -88,20 +86,20 @@ h1{padding:24px 0 20px;font-size:clamp(27px,3vw,39px);letter-spacing:-.045em;lin
 .patient .bubble:hover{background:linear-gradient(120deg,#ac2f1f,#b73e24)}
 .patient.revisit .bubble{outline:2px solid #b14430;outline-offset:2px}
 .assistant-followup{margin-top:7px;border-left:2px solid #d98367;background:#fff5ec;padding:6px 8px;border-radius:0 8px 8px 0;color:#633f32}
-.assistant-followup h3{font-size:11px;margin-bottom:3px;color:#8b4c36}
-.assistant-followup p{font-size:13px;line-height:1.5}
-.followup-reply{border:0;background:transparent;color:#834530;padding:4px 0 0;text-decoration:underline;text-underline-offset:2px;font-size:11px;font-weight:700}
+.assistant-followup h3{font-size:inherit;margin-bottom:3px;color:#8b4c36}
+.assistant-followup p{font-size:inherit;line-height:1.5}
+.followup-reply{border:0;background:transparent;color:#834530;padding:4px 0 0;text-decoration:underline;text-underline-offset:2px;font-size:inherit;font-weight:700}
 .suggestions{min-width:0}
-.suggestions h3{margin:0 0 5px 2px;color:#55545a;font-size:11px;line-height:1.3}
+.suggestions h3{margin:0 0 5px 2px;color:#774736;font-size:inherit;line-height:1.3}
 .suggestion-list{display:grid;gap:5px}
 .suggestion{
-  min-height:34px;display:block;background:#fff;color:#343339;border:1px solid #e9e8eb;
-  border-radius:8px;padding:5px 8px;text-align:left;font-size:12px;line-height:1.5;overflow-wrap:anywhere;
+  min-height:34px;display:block;background:#fff;color:#68402f;border:1px solid #eddbd0;
+  border-radius:8px;padding:5px 8px;text-align:left;font-size:inherit;line-height:1.5;overflow-wrap:anywhere;
 }
 .suggestion:hover{background:#fff3ed;border-color:#e4ab98}
 .suggestion:disabled{color:#69666a;background:#f8f8f9}
 .suggestion:focus-visible{outline-offset:-2px}
-.suggestion-history{margin-top:5px;color:#656167;font-size:11px}
+.suggestion-history{margin-top:5px;color:#656167;font-size:inherit}
 .suggestion-history summary{cursor:pointer;width:fit-content;padding:2px 0}
 .suggestion-history .suggestions{margin-top:4px}
 .suggestion-history h3{display:none}
@@ -111,12 +109,12 @@ h1{padding:24px 0 20px;font-size:clamp(27px,3vw,39px);letter-spacing:-.045em;lin
   scrollbar-width:thin;scroll-snap-type:x proximity;overscroll-behavior-x:contain;
 }
 .question-dock .suggestion{
-  flex:none;min-width:91px;max-width:min(58%,153px);min-height:38px;
+  flex:none;min-width:91px;max-width:min(58%,165px);min-height:44px;
   scroll-snap-align:start;box-shadow:0 2px 5px #24202609;
 }
 .reply-target{
   display:flex;align-items:center;justify-content:space-between;gap:7px;margin:0 0 6px;padding:5px 7px;
-  border-left:2px solid #da8065;border-radius:0 7px 7px 0;background:#fce5d9;color:#774432;font-size:11px;
+  border-left:2px solid #da8065;border-radius:0 7px 7px 0;background:#fce5d9;color:#774432;font-size:inherit;
 }
 .reply-target span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .reply-target button{border:0;background:transparent;color:#8b4d3b;padding:0;flex:none;line-height:1}
@@ -126,29 +124,29 @@ h1{padding:24px 0 20px;font-size:clamp(27px,3vw,39px);letter-spacing:-.045em;lin
 .assistant-notice.failed-answer .bubble{border-color:#edc9b9;color:#873d2d;background:#fff7f2}
 .inline-retry{
   display:inline-flex;align-items:center;min-height:30px;margin-top:5px;border:1px solid #eac4b1;
-  border-radius:7px;background:#fff9f5;color:#843c2d;padding:3px 8px;font-size:12px;font-weight:700;
+  border-radius:7px;background:#fff9f5;color:#843c2d;padding:3px 8px;font-size:inherit;font-weight:700;
 }
 .inline-retry:hover{background:#ffefe5}
-.phone-bottom{background:#f5f5f6;border-top:1px solid #ebe9ed;padding:7px 9px 0;flex:none}
+.phone-bottom{background:#fff5ee;border-top:1px solid #f0ded4;padding:7px 9px 0;flex:none}
 .composer{
   display:flex;align-items:flex-end;gap:5px;padding:4px;border:1px solid #ededf0;border-radius:12px;
   background:#fff;box-shadow:0 3px 10px #28222c15;
 }
 .composer textarea{
   color:var(--phone-ink);background:transparent;border:0;border-radius:8px;resize:none;width:100%;
-  min-width:0;min-height:36px;height:36px;max-height:116px;padding:8px 6px;font-size:16px;line-height:1.25;
+  min-width:0;min-height:42px;height:42px;max-height:116px;padding:8px 6px;font-size:inherit;line-height:1.25;
 }
 .composer textarea::placeholder{color:#6e6972}
 .send{
   background:linear-gradient(145deg,#ce3b23,#e65934);color:#fff;border:0;border-radius:50%;
-  width:34px;height:34px;display:grid;place-items:center;flex:none;padding:0;margin:2px;
+  width:40px;height:40px;display:grid;place-items:center;flex:none;padding:0;margin:2px;
 }
 .send:hover{background:#bb3c22}
 .send:disabled{background:#df806a;color:#fff}
 .send svg{width:16px;height:16px}
 .home-indicator{margin:7px auto 5px;width:40%;height:4px;border-radius:4px;background:#212124}
 .panel{height:var(--work-height);min-width:0;background:white;border:1px solid var(--line);border-radius:15px;box-shadow:0 3px 10px #1a3b3509;display:flex;flex-direction:column;overflow:hidden}.panel-heading{padding:16px 19px;border-bottom:1px solid #e3ebe8;display:flex;gap:10px;align-items:center;flex:none}.panel-icon{width:37px;height:37px;border-radius:10px;background:#e5f1ec;color:#205f53;flex:none;display:grid;place-items:center}.panel-heading h2{font-size:19px;line-height:1.3;letter-spacing:-.02em}.totals{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;color:var(--muted);font-size:12px}.totals span{border-radius:6px;padding:4px 7px;background:#eff5f2;white-space:nowrap}.totals b{color:#235e52}.capture-feed{flex:1;overflow:auto;min-height:0;scrollbar-width:thin;padding:13px 18px 0;overscroll-behavior:contain}.turn{border:1px solid #dce8e3;border-radius:10px;overflow:hidden;margin-bottom:11px}.turn[open]{border-color:#bfdbcf}.turn-summary{padding:11px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;row-gap:6px;align-items:center;cursor:pointer;background:#f8faf9;list-style:none}.turn-summary::-webkit-details-marker{display:none}.turn[open]>.turn-summary{background:#f0f7f3;border-bottom:1px solid #dfece5}.turn-summary:hover{background:#edf6f1}.turn-author{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:740}.turn-author time{font-weight:500;color:var(--muted);font-size:12px}.turn-meta{display:flex;align-items:center;gap:7px}.turn-meta .chevron{width:15px;height:15px;color:#426459}.turn[open] .chevron{transform:rotate(180deg)}.turn-quote{grid-column:1/-1;font-size:14px;line-height:1.65;overflow-wrap:anywhere;color:#2d4a47;margin:0}.turn:not([open]) .turn-quote{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.turn[open] .turn-quote{white-space:pre-wrap}mark{background:#cde6d9;color:#174c42;border-radius:3px;padding:1px 2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
-.badge,.tag,.sink{padding:3px 6px;border-radius:5px;font-size:12px;font-weight:700;line-height:1.4;white-space:nowrap;display:inline-block}.badge{background:#e9f0ef;color:#456560}.badge[data-tone="success"]{background:#dceee4;color:#21634d}.badge[data-tone="error"]{color:#933e32;background:#f6e7e2}.tag{background:#e0efe7;color:#285f4b}.tag.symptom{background:#e7eff8;color:#365b79}.tag.event{background:#efeaf7;color:#614a8b}.tag.adherence{background:#faf0e2;color:#735222}.sink{background:#eff4f2;color:#496b63;font-size:11px;white-space:normal;overflow-wrap:anywhere}
+.badge,.tag,.sink{padding:3px 6px;border-radius:5px;font-size:12px;font-weight:700;line-height:1.4;white-space:nowrap;display:inline-block}.badge{background:#e9f0ef;color:#456560}.badge.turn-intent{background:#eef1f8;color:#42537c}.badge[data-tone="success"]{background:#dceee4;color:#21634d}.badge[data-tone="error"]{color:#933e32;background:#f6e7e2}.tag{background:#e0efe7;color:#285f4b}.tag.symptom{background:#e7eff8;color:#365b79}.tag.event{background:#efeaf7;color:#614a8b}.tag.adherence{background:#faf0e2;color:#735222}.sink{background:#eff4f2;color:#496b63;font-size:11px;white-space:normal;overflow-wrap:anywhere}
 .turn-body{padding:11px 12px 12px}.turn-actions{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}.turn-actions h3{font-size:14px;line-height:1.35}.text-action{border:0;background:transparent;padding:3px 1px;color:#126454;font-size:13px;white-space:nowrap;text-decoration:underline;text-underline-offset:3px}.text-action:hover{color:#073d34}.empty,.ongoing{background:#f6f9f7;border:1px dashed #d1e2db;border-radius:8px;padding:10px 12px;color:var(--muted);font-size:13px;line-height:1.6}.turn-body .empty,.turn-body .ongoing{margin-top:8px}
 .mapping-scroll{margin-top:8px;border:1px solid #e0ebe5;border-radius:8px;overflow:auto}.mapping-table{border-collapse:collapse;width:100%;min-width:310px;text-align:left;font-size:13px}.mapping-table th{background:#f3f7f4;color:#385951;font-size:12px;padding:6px 8px;white-space:nowrap;font-weight:700}.mapping-table td{padding:5px 8px;border-top:1px solid #e9efeb;line-height:1.4;vertical-align:top;overflow-wrap:anywhere}.mapping-table td:nth-child(1){width:30%;color:#496760}.mapping-table td:nth-child(2){width:34%;font-weight:660}.mapping-table td:nth-child(3){width:36%}.mapping-table .group th{border-top:1px solid #deebe2;background:#fbfdfc;font-size:12px;color:#406359;padding:6px 8px}.mapping-table .group th span+span{margin-left:7px}.mapping-table .update-row td{border-top:0;background:#f7faf8;padding-top:1px;padding-bottom:8px}
 .operation{display:inline-block;border-radius:4px;padding:2px 6px;margin-right:7px;font-size:12px;font-weight:700;background:#e8eff7;color:#345c7c}
@@ -228,7 +226,7 @@ dialog{width:min(700px,calc(100vw - 28px));color:var(--ink);border:1px solid var
             </div>
             <div class="drug-context">
               <span>1 型发作性睡病（NT1）</span>
-              <a class="drug-link" href="https://www.cpi.ac.cn/zx/xyzl/202607/t20260723_430297.html" target="_blank" rel="noopener noreferrer" aria-label="奥泽悦（奥普雷顿片）药品资料"><svg aria-hidden="true"><use href="#pill"/></svg>药品资料</a>
+
             </div>
           </header>
           <div id="messages" class="messages" role="log" aria-label="用药对话" tabindex="0"></div>
@@ -275,6 +273,12 @@ const drug = '奥泽悦';
 const initialSession = 'DEMO-ORZEYFUL-V2';
 const greeting = '你好，我是奥泽悦用药助手。可以问我用药问题，也可以说说近期用药后有什么感受。';
 const openingQuestions = ['奥泽悦适用于哪些患者？','复诊前需要整理哪些用药记录？','该怎么记录白天突然睡着的情况？'];
+
+function openingSuggestions(complete) {
+  const priority = ['EX-02','EF-CSA-06','AE-URI-01',...clientCore.keys()];
+  const missing = [...new Set(priority)].filter(code=>!complete.has(code)).map(code=>starterFieldSuggestions[code]);
+  return [...missing,...openingQuestions].slice(0,3);
+}
 const starter = '我从2026年11月12日开始吃奥泽悦。近7天平均每天白天会突然睡着2次，过去7天猝倒了3次。';
 const nextStarter = '更正一下，近7天平均每天白天突然睡着1次。近7天内我又猝倒了2次。';
 const seedPeriod = {key:'2026-11-19/2026-11-25',label:'近7天 · 11月19日 至 11月25日'};
@@ -286,7 +290,7 @@ function seedObservation(message, field_code, field_name, value, unit, literal, 
 const sample = {
   answer:'你提到 11 月 12 日开始服药，近 7 天白天仍有突然睡着的情况，还发生了 3 次猝倒。你可以记下每次发作的时间和当时在做什么，方便复诊时和医生沟通。',
   model:'预设示例',
-  suggestions:['怎样区分日间嗜睡和猝倒？','记录猝倒发作时要写下哪些信息？','复诊时怎样描述奥泽悦用药后的变化？'],
+    suggestions:['记录猝倒时，需要记下哪些诱因？','怎么记录每天服用奥泽悦的次数？','怎么比较开始用药前后的整体变化？'],
   observations:[
     seedObservation(starter,'EX-02','首次服药日期','2026-11-12','','我从2026年11月12日开始吃奥泽悦',
       {mode:'replace',policy:'replace',period:{key:'baseline',label:'基线'}}),
@@ -299,7 +303,7 @@ const sample = {
 const nextSample = {
   answer:'收到。你更正了近 7 天白天突然睡着的日均次数，还补充了同一周期新增的 2 次猝倒。复诊时可以和医生一起看看近一周发作的变化。',
   model:'预设示例',
-  suggestions:['怎样记录近 7 天的猝倒次数？','突然睡着时应记录哪些场景？','猝倒比前一周增多，复诊时怎么描述？'],
+    suggestions:['记录猝倒时，需要记下哪些诱因？','猝倒时哪些部位的表现值得记录？','怎么比较开始用药前后的整体变化？'],
   observations:[
     seedObservation(nextStarter,'EF-CSA-06','白天不可控睡眠发作次数',1,'次/日','近7天平均每天白天突然睡着1次',
       {mode:'replace',policy:'replace',period:seedPeriod}),
@@ -511,7 +515,10 @@ function updateDescription(record) {
 }
 
 const coreFields = [{"field_code":"DM-BI-02","group":"基础与诊断","field_name":"年龄"},{"field_code":"DM-BI-03","group":"基础与诊断","field_name":"性别"},{"field_code":"DX-MV-02","group":"基础与诊断","field_name":"确诊日期"},{"field_code":"DX-MV-08","group":"基础与诊断","field_name":"当前核心症状清单"},{"field_code":"EX-02","group":"奥泽悦用药","field_name":"首次服药日期"},{"field_code":"EX-04","group":"奥泽悦用药","field_name":"每日总剂量"},{"field_code":"EX-05","group":"奥泽悦用药","field_name":"每日服药次数"},{"field_code":"EX-06","group":"奥泽悦用药","field_name":"服药时间点"},{"field_code":"EX-09","group":"奥泽悦用药","field_name":"剂量调整事件"},{"field_code":"EX-12","group":"奥泽悦用药","field_name":"漏服情况"},{"field_code":"EX-17","group":"奥泽悦用药","field_name":"是否联合其他NT1治疗"},{"field_code":"EX-18","group":"奥泽悦用药","field_name":"停药日期"},{"field_code":"EX-19","group":"奥泽悦用药","field_name":"停药原因"},{"field_code":"EF-ESS-01","group":"症状与疗效","field_name":"ESS 总得分"},{"field_code":"EF-CSA-02","group":"症状与疗效","field_name":"猝倒发作次数(近7天)"},{"field_code":"EF-CSA-03","group":"症状与疗效","field_name":"猝倒触发情境"},{"field_code":"EF-CSA-04","group":"症状与疗效","field_name":"猝倒型式与部位"},{"field_code":"EF-CSA-05","group":"症状与疗效","field_name":"猝倒持续时间"},{"field_code":"EF-CSA-06","group":"症状与疗效","field_name":"白天不可控睡眠发作次数"},{"field_code":"EF-CSA-09","group":"症状与疗效","field_name":"睡眠瘫痪频率"},{"field_code":"EF-CSA-11","group":"症状与疗效","field_name":"夜间睡眠时长"},{"field_code":"EF-CSA-13","group":"症状与疗效","field_name":"患者总体改善印象(PGI-I)"},{"field_code":"AE-AE-02","group":"安全性与生活风险","field_name":"不良事件名称"},{"field_code":"AE-AE-03","group":"安全性与生活风险","field_name":"不良事件开始日期"},{"field_code":"AE-AE-05","group":"安全性与生活风险","field_name":"不良事件严重程度"},{"field_code":"AE-AE-07","group":"安全性与生活风险","field_name":"不良事件处理措施"},{"field_code":"AE-AE-08","group":"安全性与生活风险","field_name":"不良事件转归"},{"field_code":"AE-INS-01","group":"安全性与生活风险","field_name":"失眠是否发生"},{"field_code":"AE-URI-01","group":"安全性与生活风险","field_name":"尿频/尿急是否发生"},{"field_code":"AE-TA-01","group":"安全性与生活风险","field_name":"是否发生驾驶/交通事故或险情"}];
+const supplementaryCodes = ["DX-MV-01","DX-MV-07","DX-CC-01","PV-PMH-01","PV-PMH-02","PV-PMH-07","PV-PMH-10"];
+const starterFieldSuggestions = {"DM-BI-02":"年龄与奥泽悦的适用范围有什么关系？","DM-BI-03":"复诊时如何记录性别信息？","DX-MV-02":"以前的 NT1 确诊日期可以在哪里查？","DX-MV-08":"怎样整理最近的 NT1 症状？","EX-02":"记录奥泽悦的首次服药日期有什么用？","EX-04":"如何记录实际每天服用的总量？","EX-05":"怎么记录每天服用奥泽悦的次数？","EX-06":"复诊时怎样整理每天的服药时间？","EX-09":"如何记录已经发生的剂量调整？","EX-12":"怎么记录漏服天数和原因？","EX-17":"如何整理同时进行的其他 NT1 治疗？","EX-18":"如果曾经停药，日期该怎么记录？","EX-19":"过去的停药原因该怎么整理？","EF-ESS-01":"复诊时到哪里找 ESS 量表总分？","EF-CSA-02":"怎样统计近 7 天的猝倒次数？","EF-CSA-03":"记录猝倒时，需要记下哪些诱因？","EF-CSA-04":"猝倒时哪些部位的表现值得记录？","EF-CSA-05":"怎样记录一次猝倒持续了多久？","EF-CSA-06":"近 7 天白天突然睡着的次数怎么记？","EF-CSA-09":"怎样记录一周内的睡眠瘫痪次数？","EF-CSA-11":"怎样记录夜间实际睡眠时长？","EF-CSA-13":"怎么比较开始用药前后的整体变化？","AE-AE-02":"如果服药后不舒服，需要记下哪些表现？","AE-AE-03":"如果出现不适，开始日期怎么记？","AE-AE-05":"怎么描述用药后不适的严重程度？","AE-AE-07":"怎么记录曾经为不适做过的处理？","AE-AE-08":"怎么记录不适后来有没有好转？","AE-INS-01":"如果睡不着，怎样记录这段变化？","AE-URI-01":"如果出现尿频或尿急，怎样观察记录？","AE-TA-01":"如果有过驾驶险情，复诊时该如何描述？"};
 const clientCore = new Map(coreFields.map(field => [field.field_code,field]));
+const followupCodes = new Set([...clientCore.keys(),...supplementaryCodes]);
 const coreGroups = [...new Set(coreFields.map(field=>field.group))];
 
 function coreKey(field) {
@@ -519,8 +526,10 @@ function coreKey(field) {
 }
 
 function coreSnapshot(records, session) {
-  const matching = records.filter(row => row.schema_version === 'v2' && row.patient_id === session &&
-    row.drug === drug && clientCore.has(row.field_code));
+  const recorded = records.filter(row => row.schema_version === 'v2' && row.patient_id === session && row.drug === drug);
+  const matching = recorded.filter(row=>clientCore.has(row.field_code));
+  const supplementary = new Set(recorded.filter(row=>followupCodes.has(row.field_code) && !clientCore.has(row.field_code))
+    .map(row=>row.field_code));
   const ids = new Map(matching.map(row=>[row.record_id,row]));
   const complete = new Set(matching.filter(row=>row.field_code !== 'EX-12').map(row=>row.field_code));
   const lastMissed = matching.filter(row=>row.field_code === 'EX-12')
@@ -535,7 +544,7 @@ function coreSnapshot(records, session) {
   }
   const missed = Object.keys(missedValue);
   if (missed.length === 2) complete.add('EX-12');
-  return {complete,missed,lastMissed};
+  return {complete,missed,lastMissed,supplementary};
 }
 
 async function loadCoreSnapshot(session) {
@@ -576,6 +585,7 @@ async function syncCoreProgress() {
   const generation = control.generation;
   const snapshot = await loadCoreSnapshot(session);
   if (session === control.session && generation === control.generation) renderCoreProgress(snapshot);
+  return snapshot;
 }
 
 function linkCoreSupplement(record, run) {
@@ -734,6 +744,8 @@ function mappingTable(records) {
   return wrap;
 }
 
+const intentLabels = {symptom:'症状',treatment:'治疗',medication:'用药',history:'既往史'};
+
 const turnStates = {
   recognizing:{label:'DeepSeek 处理中', tone:'neutral'},
   unavailable:{label:'问答失败', tone:'error'},
@@ -763,6 +775,8 @@ function renderTurn(run) {
   const state = turnStates[status];
   const count = records.length;
   const showRecords = count > 0 && status !== 'recognizing';
+  nodes.intent.textContent = intentLabels[run.intent] ?? '';
+  nodes.intent.hidden = !nodes.intent.textContent;
   nodes.badge.dataset.tone = state.tone;
   nodes.badge.textContent = status === 'saved' ? '已入库 ' + count + ' 条' : state.label;
   if (showRecords) markEvidence(nodes.quote, text, records);
@@ -815,14 +829,15 @@ function addTurn(run) {
   author.append(stamp);
   const meta = element('span', undefined, 'turn-meta');
   const badge = element('span', undefined, 'badge');
+  const intent = element('span',undefined,'badge turn-intent');
   const disclosure = element('span', undefined, 'chevron');
   disclosure.innerHTML = icon('chevron');
-  meta.append(badge, disclosure);
+  meta.append(intent,badge,disclosure);
   const quote = element('span', undefined, 'turn-quote');
   title.append(author, meta, quote);
   const body = element('div', undefined, 'turn-body');
   card.append(title, body);
-  run.nodes = {card, badge, quote, body};
+  run.nodes = {card,badge,intent,quote,body};
   feed.prepend(card);
   feed.scrollTop = 0;
   renderTurn(run);
@@ -860,17 +875,19 @@ function setBusy(busy) {
 
 function resizeInput() {
   const input = el('message-input');
-  input.style.height = '36px';
-  input.style.height = Math.min(116, Math.max(36, input.scrollHeight)) + 'px';
+  input.style.height = '42px';
+  input.style.height = Math.min(116, Math.max(42, input.scrollHeight)) + 'px';
 }
 
 function syncReplyTarget() {
   const followup = control.activeFollowup;
   el('reply-target').hidden = !followup;
   el('reply-label').textContent = followup ? '补充：' + followup.field_name : '';
-  for (const button of el('messages').querySelectorAll('.followup-reply')) {
+  const messages = el('messages');
+  for (const button of messages.querySelectorAll('.followup-reply')) {
     button.hidden = button.dataset.messageId !== followup?.messageId;
   }
+  if (followup) messages.scrollTop = messages.scrollHeight;
 }
 
 function beginSession(session, started = new Date()) {
@@ -888,14 +905,18 @@ function beginSession(session, started = new Date()) {
   syncReplyTarget();
   control.entries.clear();
   el('messages').replaceChildren();
-  appendMessage('assistant',greeting,null,started,null,openingQuestions);
+  const greetingMessage = appendMessage('assistant',greeting,null,started,null,openingSuggestions(new Set()));
   el('message-input').value = '';
   resizeInput();
   el('capture-feed').replaceChildren(element('p', '暂无患者消息', 'empty feed-empty'));
   el('capture-status').textContent = '';
   setCounts();
   renderCoreProgress(coreSnapshot([],control.session));
-  syncCoreProgress();
+  syncCoreProgress().then(snapshot=>{
+    if (control.suggestionsOwner === greetingMessage) {
+      showDockedSuggestions(greetingMessage,makeSuggestions(openingSuggestions(snapshot.complete)));
+    }
+  });
   setBusy(false);
 }
 
@@ -992,8 +1013,8 @@ async function requestAnswer(run) {
       message:run.text,history:run.history.map(({role,content}) => ({
         role,content:role === 'assistant' ? content.slice(-500) : content.slice(0,500)
       })),
-      core:{complete:[...run.coreSnapshot.complete],missed:run.coreSnapshot.missed,asked:[...control.coreAsked]},
-      ...(previous ? {pending_core:{field_code:previous.field_code,part:previous.part,asked_on:previous.asked_on}} : {})
+      core:{complete:[...run.coreSnapshot.complete,...run.coreSnapshot.supplementary],missed:run.coreSnapshot.missed,asked:[...control.coreAsked]},
+      ...(previous ? {pending_core:{field_code:previous.field_code,part:previous.part,asked_on:previous.asked_on,question:previous.question}} : {})
     });
     const result = await askGateway(body,pending.signal);
     if (run.generation !== control.generation) return;
@@ -1020,13 +1041,14 @@ async function requestAnswer(run) {
 }
 
 async function handleAnswer(run, result) {
+  run.intent = result.intent;
   run.records = result.observations.map((record, index) => ({
     record_id:run.batch + '-' + (index + 1), batch_id:run.batch, patient_id:run.session, message_id:run.messageId,
     source:run.initial ? '预设示例' : '患者自报', synthetic:run.initial, recorded_at:run.time.toISOString(),
     schema_version:'v2', engine:result.model, cohort_context:'NT1 · 奥泽悦用药场景', drug, ...linkCoreSupplement(record,run)
   }));
   run.followup = null;
-  if (clientCore.has(result.follow_up?.field_code) && typeof result.follow_up.question === 'string') {
+  if (followupCodes.has(result.follow_up?.field_code) && typeof result.follow_up.question === 'string') {
     const anchor = run.records.find(row => row.field_code === 'EX-12') ?? run.coreSnapshot?.lastMissed;
     run.followup = {...result.follow_up,messageId:run.messageId,
       ...(result.follow_up.field_code === 'EX-12' && anchor ? {anchor} : {})};
