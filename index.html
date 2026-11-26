@@ -1,0 +1,1158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f1f5f4">
+<title>单药问答与 RWD 采集</title>
+<style>
+:root{color-scheme:light;--ink:#183439;--muted:#50686b;--line:#dbe6e3;--canvas:#f0f4f2;--teal:#096a5b;--mint:#e0f0e9;--white:#fff;font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;color:var(--ink);background:var(--canvas)}
+*{box-sizing:border-box}body{margin:0;font-size:16px}button,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:default}button:focus-visible,a:focus-visible,summary:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid #087565;outline-offset:3px}a{color:var(--teal)}h1,h2,h3,h4,p{margin:0}svg{width:19px;height:19px;flex:none;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}[hidden]{display:none!important}
+.shell{width:min(1340px,calc(100% - 88px));margin-inline:auto}.topbar{border-bottom:1px solid var(--line);background:#fff}.topbar .shell{height:60px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{display:flex;align-items:center;gap:9px;font-weight:720;font-size:15px}.brand-mark{width:32px;height:32px;border-radius:9px;background:#105e53;color:#fff;display:grid;place-items:center}.brand-mark svg{width:21px;height:21px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;color:var(--ink);background:white;border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:14px;font-weight:650;line-height:1.4}.btn:hover{background:#eef6f2;border-color:#a9cdc0}.btn svg{width:17px;height:17px}
+h1{padding:24px 0 20px;font-size:clamp(27px,3vw,39px);letter-spacing:-.045em;line-height:1.25;font-weight:760}.workspace{display:grid;grid-template-columns:minmax(338px,.42fr) minmax(0,1fr);gap:26px;align-items:start;padding-bottom:25px;--work-height:clamp(560px,calc(100dvh - 156px),722px)}
+/* iPhone 16 Pro body dimensions and display pixel ratio from Apple's technical specifications. */
+.phone-area{
+  display:grid;place-items:center;min-width:0;
+  --body-width:715;--body-height:1496;--display-width:1206;--display-height:2622;
+}
+.phone{
+  position:relative;width:min(100%,calc(var(--work-height) * var(--body-width) / var(--body-height)));
+  aspect-ratio:var(--body-width)/var(--body-height);min-height:0;background:#1e2b30;border:1px solid #42535a;
+  border-radius:11.4% / 5.45%;box-shadow:0 16px 34px #203d3c26,0 1px 4px #14283030;isolation:isolate;container-type:inline-size;
+}
+.phone::before,.phone::after{content:"";position:absolute;width:3px;background:#394c54;z-index:-1;border-radius:2px}
+.phone::before{height:4%;left:-3px;top:17%;box-shadow:0 10cqi #394c54}
+.phone::after{height:6%;right:-3px;top:21%}
+.screen{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:93.13%;
+  aspect-ratio:var(--display-width)/var(--display-height);overflow:hidden;border-radius:9.6cqi;
+  display:flex;flex-direction:column;background:#f5f5f6;
+  --phone-ink:#28272c;--phone-muted:#67636a;--phone-line:#e8e7ea;--phone-accent:#c43a24;
+}
+.screen :focus-visible{outline-color:#b63c23}
+.phone-top{position:relative;flex:none;z-index:1;background:#f9f9fa;border-bottom:1px solid #e9e8eb}
+.status-bar{
+  height:clamp(32px,13cqi,47px);display:flex;align-items:center;justify-content:space-between;
+  padding:4px 7.5cqi 0;color:#201a17;font-size:12px;font-weight:760;letter-spacing:.02em;
+}
+.island{
+  position:absolute;top:3cqi;left:50%;transform:translateX(-50%);background:#17272b;
+  width:28%;height:7cqi;border-radius:999px;
+}
+.status-icons{display:flex;align-items:center;gap:5px}
+.status-icons svg{width:14px;height:14px;stroke-width:2}
+.status-icons svg:last-child{width:18px}
+.phone-nav{
+  display:flex;align-items:center;justify-content:space-between;gap:9px;padding:3px 12px 8px;min-height:58px;
+}
+.drug-identity{display:flex;align-items:center;gap:8px;min-width:0}
+.drug-avatar{
+  display:block;width:38px;height:38px;flex:none;object-fit:contain;border-radius:11px;
+  background:#fff1e8;border:1px solid #f3e2d8;
+}
+.phone-title{font-size:17px;color:var(--phone-ink);font-weight:780;line-height:1.15;letter-spacing:.01em}
+.phone-subtitle{color:#665f66;font-size:11px;margin-top:4px;line-height:1.2}
+.new-chat{
+  min-height:34px;display:inline-flex;align-items:center;justify-content:center;gap:4px;flex:none;
+  color:#393438;background:#fff;border:1px solid #e9e8eb;border-radius:8px;padding:3px 7px;
+  font-size:12px;font-weight:660;white-space:nowrap;
+}
+.new-chat:hover{background:#f1f0f2}
+.new-chat svg{width:14px;height:14px}
+.drug-context{
+  display:flex;align-items:center;gap:7px;justify-content:space-between;padding:6px 12px 7px;
+  min-height:33px;border-top:1px solid #eeeef0;background:#fff;color:#545056;font-size:11px;
+}
+.drug-context span{font-weight:690}
+.drug-link{
+  display:inline-flex;align-items:center;gap:4px;padding:1px 0;color:#a33827;
+  font-size:11px;font-weight:700;text-underline-offset:2px;white-space:nowrap;
+}
+.drug-link svg{width:12px;height:12px}
+.messages{
+  position:relative;min-height:0;flex:1;overflow:auto;padding:13px 10px 7px;
+  background:#f5f5f6;scrollbar-width:thin;overscroll-behavior:contain;z-index:2;
+}
+.message{display:flex;justify-content:flex-start;margin:0 0 14px}
+.message.patient{justify-content:flex-end}
+.message-content{width:100%;min-width:0}
+.patient .message-content{width:auto;max-width:83%}
+.bubble{
+  display:block;width:100%;background:#fff;border:1px solid #fff;padding:11px 10px;
+  border-radius:13px;color:var(--phone-ink);font-size:14px;line-height:1.68;
+  overflow-wrap:anywhere;white-space:pre-wrap;text-align:left;
+}
+.patient .bubble{
+  color:#fff;background:linear-gradient(120deg,#c33721,#c94729);border-color:transparent;
+  border-radius:13px 13px 3px 13px;
+}
+.patient .bubble:hover{background:linear-gradient(120deg,#ac2f1f,#b73e24)}
+.patient.revisit .bubble{outline:2px solid #b14430;outline-offset:2px}
+.assistant-followup{margin-top:7px;border-left:2px solid #d98367;background:#fff5ec;padding:6px 8px;border-radius:0 8px 8px 0;color:#633f32}
+.assistant-followup h3{font-size:11px;margin-bottom:3px;color:#8b4c36}
+.assistant-followup p{font-size:13px;line-height:1.5}
+.followup-reply{border:0;background:transparent;color:#834530;padding:4px 0 0;text-decoration:underline;text-underline-offset:2px;font-size:11px;font-weight:700}
+.suggestions{min-width:0}
+.suggestions h3{margin:0 0 5px 2px;color:#55545a;font-size:11px;line-height:1.3}
+.suggestion-list{display:grid;gap:5px}
+.suggestion{
+  min-height:34px;display:block;background:#fff;color:#343339;border:1px solid #e9e8eb;
+  border-radius:8px;padding:5px 8px;text-align:left;font-size:12px;line-height:1.5;overflow-wrap:anywhere;
+}
+.suggestion:hover{background:#fff3ed;border-color:#e4ab98}
+.suggestion:disabled{color:#69666a;background:#f8f8f9}
+.suggestion:focus-visible{outline-offset:-2px}
+.suggestion-history{margin-top:5px;color:#656167;font-size:11px}
+.suggestion-history summary{cursor:pointer;width:fit-content;padding:2px 0}
+.suggestion-history .suggestions{margin-top:4px}
+.suggestion-history h3{display:none}
+.question-dock{margin-bottom:6px;min-width:0}
+.question-dock .suggestion-list{
+  display:flex;overflow:auto;gap:5px;padding:1px 1px 4px;
+  scrollbar-width:thin;scroll-snap-type:x proximity;overscroll-behavior-x:contain;
+}
+.question-dock .suggestion{
+  flex:none;min-width:91px;max-width:min(58%,153px);min-height:38px;
+  scroll-snap-align:start;box-shadow:0 2px 5px #24202609;
+}
+.reply-target{
+  display:flex;align-items:center;justify-content:space-between;gap:7px;margin:0 0 6px;padding:5px 7px;
+  border-left:2px solid #da8065;border-radius:0 7px 7px 0;background:#fce5d9;color:#774432;font-size:11px;
+}
+.reply-target span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reply-target button{border:0;background:transparent;color:#8b4d3b;padding:0;flex:none;line-height:1}
+.reply-target button svg{width:16px;height:16px}
+.assistant-result-note{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:5px;color:#785143;font-size:11px}.assistant-result-note .text-action{color:#8f442f;font-size:11px}
+.assistant-notice .bubble{background:#fff9f2;color:#765345}
+.assistant-notice.failed-answer .bubble{border-color:#edc9b9;color:#873d2d;background:#fff7f2}
+.inline-retry{
+  display:inline-flex;align-items:center;min-height:30px;margin-top:5px;border:1px solid #eac4b1;
+  border-radius:7px;background:#fff9f5;color:#843c2d;padding:3px 8px;font-size:12px;font-weight:700;
+}
+.inline-retry:hover{background:#ffefe5}
+.phone-bottom{background:#f5f5f6;border-top:1px solid #ebe9ed;padding:7px 9px 0;flex:none}
+.composer{
+  display:flex;align-items:flex-end;gap:5px;padding:4px;border:1px solid #ededf0;border-radius:12px;
+  background:#fff;box-shadow:0 3px 10px #28222c15;
+}
+.composer textarea{
+  color:var(--phone-ink);background:transparent;border:0;border-radius:8px;resize:none;width:100%;
+  min-width:0;min-height:36px;height:36px;max-height:116px;padding:8px 6px;font-size:16px;line-height:1.25;
+}
+.composer textarea::placeholder{color:#6e6972}
+.send{
+  background:linear-gradient(145deg,#ce3b23,#e65934);color:#fff;border:0;border-radius:50%;
+  width:34px;height:34px;display:grid;place-items:center;flex:none;padding:0;margin:2px;
+}
+.send:hover{background:#bb3c22}
+.send:disabled{background:#df806a;color:#fff}
+.send svg{width:16px;height:16px}
+.provider-note{font-size:10px;color:#68636a;margin:4px 3px 0;line-height:1.4}
+.home-indicator{margin:7px auto 5px;width:40%;height:4px;border-radius:4px;background:#212124}
+.panel{height:var(--work-height);min-width:0;background:white;border:1px solid var(--line);border-radius:15px;box-shadow:0 3px 10px #1a3b3509;display:flex;flex-direction:column;overflow:hidden}.panel-heading{padding:16px 19px;border-bottom:1px solid #e3ebe8;display:flex;gap:10px;align-items:center;flex:none}.panel-icon{width:37px;height:37px;border-radius:10px;background:#e5f1ec;color:#205f53;flex:none;display:grid;place-items:center}.panel-heading h2{font-size:19px;line-height:1.3;letter-spacing:-.02em}.totals{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;color:var(--muted);font-size:12px}.totals span{border-radius:6px;padding:4px 7px;background:#eff5f2;white-space:nowrap}.totals b{color:#235e52}.capture-feed{flex:1;overflow:auto;min-height:0;scrollbar-width:thin;padding:13px 18px 0;overscroll-behavior:contain}.turn{border:1px solid #dce8e3;border-radius:10px;overflow:hidden;margin-bottom:11px}.turn[open]{border-color:#bfdbcf}.turn-summary{padding:11px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;row-gap:6px;align-items:center;cursor:pointer;background:#f8faf9;list-style:none}.turn-summary::-webkit-details-marker{display:none}.turn[open]>.turn-summary{background:#f0f7f3;border-bottom:1px solid #dfece5}.turn-summary:hover{background:#edf6f1}.turn-author{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:740}.turn-author time{font-weight:500;color:var(--muted);font-size:12px}.turn-meta{display:flex;align-items:center;gap:7px}.turn-meta .chevron{width:15px;height:15px;color:#426459}.turn[open] .chevron{transform:rotate(180deg)}.turn-quote{grid-column:1/-1;font-size:14px;line-height:1.65;overflow-wrap:anywhere;color:#2d4a47;margin:0}.turn:not([open]) .turn-quote{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.turn[open] .turn-quote{white-space:pre-wrap}mark{background:#cde6d9;color:#174c42;border-radius:3px;padding:1px 2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.badge,.tag,.sink{padding:3px 6px;border-radius:5px;font-size:12px;font-weight:700;line-height:1.4;white-space:nowrap;display:inline-block}.badge{background:#e9f0ef;color:#456560}.badge[data-tone="success"]{background:#dceee4;color:#21634d}.badge[data-tone="error"]{color:#933e32;background:#f6e7e2}.tag{background:#e0efe7;color:#285f4b}.tag.symptom{background:#e7eff8;color:#365b79}.tag.event{background:#efeaf7;color:#614a8b}.tag.adherence{background:#faf0e2;color:#735222}.sink{background:#eff4f2;color:#496b63;font-size:11px;white-space:normal;overflow-wrap:anywhere}
+.turn-body{padding:11px 12px 12px}.turn-actions{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}.turn-actions h3{font-size:14px;line-height:1.35}.text-action{border:0;background:transparent;padding:3px 1px;color:#126454;font-size:13px;white-space:nowrap;text-decoration:underline;text-underline-offset:3px}.text-action:hover{color:#073d34}.empty,.ongoing{background:#f6f9f7;border:1px dashed #d1e2db;border-radius:8px;padding:10px 12px;color:var(--muted);font-size:13px;line-height:1.6}.turn-body .empty,.turn-body .ongoing{margin-top:8px}
+.mapping-scroll{margin-top:8px;border:1px solid #e0ebe5;border-radius:8px;overflow:auto}.mapping-table{border-collapse:collapse;width:100%;min-width:310px;text-align:left;font-size:13px}.mapping-table th{background:#f3f7f4;color:#385951;font-size:12px;padding:6px 8px;white-space:nowrap;font-weight:700}.mapping-table td{padding:5px 8px;border-top:1px solid #e9efeb;line-height:1.4;vertical-align:top;overflow-wrap:anywhere}.mapping-table td:nth-child(1){width:30%;color:#496760}.mapping-table td:nth-child(2){width:34%;font-weight:660}.mapping-table td:nth-child(3){width:36%}.mapping-table .group th{border-top:1px solid #deebe2;background:#fbfdfc;font-size:12px;color:#406359;padding:6px 8px}.mapping-table .group th span+span{margin-left:7px}.mapping-table .update-row td{border-top:0;background:#f7faf8;padding-top:1px;padding-bottom:8px}
+.operation{display:inline-block;border-radius:4px;padding:2px 6px;margin-right:7px;font-size:12px;font-weight:700;background:#e8eff7;color:#345c7c}
+.operation.increment{background:#deeee6;color:#22664e}
+.operation.append,.operation.merge{background:#faefdf;color:#795427}
+.update-note{font-size:12px;color:#4b6962;overflow-wrap:anywhere}
+.core-progress{border-bottom:1px solid #e4ede8;flex:none;background:#f8fbf9}
+.core-progress summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 19px;font-size:13px;font-weight:700;color:#345952}
+.core-progress summary::after{content:'＋';color:#4c7265;font-size:14px}
+.core-progress[open] summary::after{content:'−'}
+.core-progress summary b{margin-left:auto;font-size:12px;background:#e1f1e7;color:#23694f;padding:2px 6px;border-radius:5px;white-space:nowrap}
+.core-fields{max-height:200px;overflow:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;padding:1px 19px 9px}
+.core-fields section{min-width:0}.core-fields h3{font-size:12px;margin:4px 0;color:#365c50}
+.core-fields ul{list-style:none;padding:0;margin:0}.core-fields li{display:flex;align-items:flex-start;justify-content:space-between;gap:5px;border-top:1px solid #e6eee9;padding:4px 0;font-size:12px}
+.core-code{font-size:10px;margin-left:4px;color:#637b73;white-space:nowrap}
+.core-state{background:#edf2ef;color:#586f65;padding:2px 5px;border-radius:4px;font-size:11px;white-space:nowrap;flex:none}
+.core-state[data-state="已采集"]{background:#e1f1e7;color:#28694f}
+.core-state[data-state="待补充"]{background:#fff1df;color:#795527}
+.core-turn{margin-top:8px;border:1px solid #d6e6dd;border-radius:8px;background:#f2f8f4;padding:7px 9px;color:#31574e}
+.core-turn-head{display:flex;align-items:center;gap:6px;font-size:12px;flex-wrap:wrap}
+.core-turn-head .core-state{margin-left:auto}.core-turn p{font-size:13px;line-height:1.55;margin-top:4px}.core-turn small{font-size:11px;color:#567369}
+.field-tier{display:inline-block;background:#edf2ef;color:#577169;border-radius:4px;padding:1px 4px;font-size:10px;white-space:nowrap;margin:1px 0 0 4px;vertical-align:middle}
+.field-tier.core{background:#e1f1e7;color:#28694f}
+@media(max-width:480px){.core-fields{grid-template-columns:1fr;padding-inline:11px}.core-progress summary{padding-inline:11px}}
+.field-review{font-size:11px;color:#865536;margin-top:2px}.mapping-table .sink-cell code{font-family:"SFMono-Regular",Consolas,monospace}
+.receipt{display:flex;align-items:center;gap:8px;margin-top:9px;padding:8px 9px;border-radius:7px;background:#edf6f0;border:1px solid #dfede3;color:#265a49;flex-wrap:wrap}.receipt[data-tone="neutral"]{background:#f2f6f5;border-color:#e1eae6;color:#405f58}.receipt[data-tone="error"]{background:#fbf0e9;border-color:#f1dfd2;color:#803f29}.receipt svg{height:15px;width:15px}.receipt strong{font-size:13px}.receipt .text-action{margin-left:auto}.details{color:var(--muted);font-size:12px;margin-top:8px}.details summary{cursor:pointer;width:fit-content;padding:2px 0}.details pre{max-height:220px;overflow:auto;padding:8px;background:#f1f6f3;border-radius:6px;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+dialog{width:min(700px,calc(100vw - 28px));color:var(--ink);border:1px solid var(--line);border-radius:15px;padding:0;max-height:85dvh;box-shadow:0 16px 75px #102a3c35}dialog::backdrop{background:#142c37a0}.dialog-head{display:flex;justify-content:space-between;align-items:start;gap:12px;padding:16px 17px;border-bottom:1px solid var(--line)}.dialog-head h2{font-size:20px}.dialog-head p{font-size:13px;color:var(--muted);margin-top:5px}.dialog-body{padding:10px 17px 15px;overflow:auto}.stored{border-bottom:1px solid #e0e9e5;padding:10px 0;font-size:14px}.stored:last-child{border-bottom:0}.stored summary{cursor:pointer;font-weight:680}.stored p{padding:6px 0 0 14px;color:var(--muted);line-height:1.55;font-size:13px;overflow-wrap:anywhere}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(min-width:1180px){.workspace{grid-template-columns:minmax(376px,.43fr) minmax(0,1fr);gap:33px}.capture-feed{padding-inline:21px}.panel-heading{padding-inline:21px}.turn-summary,.turn-body{padding-inline:14px}.mapping-table th,.mapping-table td{padding-inline:10px}}
+@media(max-width:1040px){.shell{width:calc(100% - 48px)}.workspace{gap:17px}.capture-feed{padding-inline:11px}.panel-heading{padding-inline:12px}.totals{gap:4px}.totals span{padding-inline:5px}}
+@media(max-width:790px){.shell{width:calc(100% - 28px)}.topbar .shell{height:52px}.brand{font-size:14px}.brand-mark{width:29px;height:29px}h1{padding:20px 0 17px}.workspace{grid-template-columns:minmax(0,1fr);gap:18px;--work-height:clamp(535px,calc(100svh - 116px),689px)}.panel{height:auto;min-height:240px}.capture-feed{overflow:visible}.panel-heading h2{font-size:17px}.turn-summary,.turn-body{padding-inline:10px}}
+@media(max-width:390px){.brand{gap:6px}.topbar .btn{padding:6px 7px;font-size:12px}.panel-heading{gap:6px}.panel-icon{width:28px;height:28px}.panel-icon svg{width:15px;height:15px}.panel-heading h2{font-size:15px}.totals{font-size:11px}.capture-feed{padding-inline:8px}.mapping-table{min-width:275px}.mapping-table td,.mapping-table th{padding-inline:5px}.sink{font-size:10px}}
+</style>
+<meta name="rwd-chat-api" content="https://101.132.38.176/api/rwd/chat">
+</head>
+<body>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0"><defs>
+<symbol id="pulse" viewBox="0 0 24 24"><path d="M2 12h5l2.5-6 4 12 2.5-6H22"/></symbol>
+<symbol id="chat" viewBox="0 0 24 24"><path d="M20.5 11.5c0 4-3.8 7.4-8.5 7.4-1 0-2-.2-2.8-.5L4 20l1.2-4.2a7.2 7.2 0 0 1-1.7-4.3C3.5 7.3 7.3 4 12 4s8.5 3.3 8.5 7.5Z"/><path d="M8.5 11.5h7"/></symbol>
+<symbol id="db" viewBox="0 0 24 24"><ellipse cx="12" cy="5.4" rx="8" ry="3.1"/><path d="M4 5.4v13.2c0 1.7 3.6 3.1 8 3.1s8-1.4 8-3.1V5.4M4 12c0 1.7 3.6 3.1 8 3.1s8-1.4 8-3.1"/></symbol>
+<symbol id="pill" viewBox="0 0 24 24"><path d="M8.8 4.8a5.6 5.6 0 0 1 7.9 0l2.5 2.5a5.6 5.6 0 0 1 0 7.9l-4 4a5.6 5.6 0 0 1-7.9 0l-2.5-2.5a5.6 5.6 0 0 1 0-7.9Z"/><path d="m7 7 10 10"/></symbol>
+<symbol id="run" viewBox="0 0 24 24"><path d="M8 5.5 19 12 8 18.5Z"/></symbol>
+<symbol id="reset" viewBox="0 0 24 24"><path d="M4 11a8 8 0 1 1 1.5 5.7M4 5v6h6"/></symbol>
+<symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/></symbol>
+<symbol id="send-icon" viewBox="0 0 24 24"><path d="m3 10 18-7-7 18-3-8-8-3Zm8 3L21 3"/></symbol>
+<symbol id="quote" viewBox="0 0 24 24"><path d="M9 5c-3 2-4.5 4.5-4.5 8v4h6v-6H7m12-6c-3 2-4.5 4.5-4.5 8v4h6v-6H17"/></symbol>
+<symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+<symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></symbol>
+<symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+<symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="signal" viewBox="0 0 24 24"><path d="M4 19v-4m5 4v-7m5 7V8m5 11V4"/></symbol>
+<symbol id="wifi" viewBox="0 0 24 24"><path d="M3 9a14 14 0 0 1 18 0M6.5 12.5a8.5 8.5 0 0 1 11 0M10 16a3.1 3.1 0 0 1 4 0m-2 3h.01"/></symbol>
+<symbol id="battery" viewBox="0 0 24 24"><rect x="2" y="7" width="17" height="10" rx="2"/><path d="M21.5 10v4M5 10h11v4H5z"/></symbol>
+</defs></svg>
+<header class="topbar"><div class="shell">
+  <div class="brand"><span class="brand-mark"><svg aria-hidden="true"><use href="#pulse"/></svg></span>发作性睡病</div>
+  <button type="button" class="btn" id="open-db"><svg aria-hidden="true"><use href="#db"/></svg>RWD 数据库</button>
+</div></header>
+<main class="shell">
+  <h1>单药问答与 RWD 采集</h1>
+  <div class="workspace">
+    <section class="phone-area" aria-labelledby="chat-heading">
+      <div class="phone">
+        <div class="screen">
+          <header class="phone-top">
+            <div class="status-bar" aria-hidden="true">
+              <span id="phone-time">10:24</span><span class="island"></span>
+              <span class="status-icons"><svg><use href="#signal"/></svg><svg><use href="#wifi"/></svg><svg><use href="#battery"/></svg></span>
+            </div>
+            <div class="phone-nav">
+              <div class="drug-identity">
+                <img class="drug-avatar" src="data:image/webp;base64,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" alt="" width="38" height="38">
+                <div><h2 id="chat-heading" class="phone-title">奥泽悦</h2><p class="phone-subtitle">奥普雷顿片用药问答</p></div>
+              </div>
+              <button type="button" class="new-chat" id="new-session"><svg aria-hidden="true"><use href="#reset"/></svg>新对话</button>
+            </div>
+            <div class="drug-context">
+              <span>1 型发作性睡病（NT1）</span>
+              <a class="drug-link" href="https://www.cpi.ac.cn/zx/xyzl/202607/t20260723_430297.html" target="_blank" rel="noopener noreferrer" aria-label="奥泽悦（奥普雷顿片）药品资料"><svg aria-hidden="true"><use href="#pill"/></svg>药品资料</a>
+            </div>
+          </header>
+          <div id="messages" class="messages" role="log" aria-label="用药对话" tabindex="0"></div>
+          <div class="phone-bottom">
+            <div id="reply-target" class="reply-target" hidden>
+              <span id="reply-label"></span>
+              <button type="button" id="close-reply" aria-label="清除追问回复提示"><svg aria-hidden="true"><use href="#close"/></svg></button>
+            </div>
+            <div id="question-dock" class="question-dock" hidden></div>
+            <form id="composer" class="composer">
+              <label class="sr-only" for="message-input">消息</label>
+              <textarea id="message-input" rows="1" maxlength="500" placeholder="咨询奥泽悦用药…"></textarea>
+              <button id="send" class="send" type="submit" aria-label="发送" title="发送" disabled><svg aria-hidden="true"><use href="#send-icon"/></svg></button>
+            </form>
+            <p class="provider-note">消息由 DeepSeek 处理，请勿输入身份或联系方式。</p>
+            <div class="home-indicator" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="panel" id="capture-panel" aria-labelledby="capture-heading">
+      <header class="panel-heading">
+        <span class="panel-icon"><svg aria-hidden="true"><use href="#db"/></svg></span>
+        <h2 id="capture-heading">消息与数据映射</h2>
+        <div class="totals"><span>患者消息 <b id="turn-count">0</b></span><span>已入库 <b id="record-count">0</b></span></div>
+      </header>
+      <details class="core-progress" aria-label="核心字段采集">
+        <summary><span>核心字段采集</span><b id="core-count">0 / 30 已采集</b></summary>
+        <div id="core-fields" class="core-fields"></div>
+      </details>
+      <div id="capture-feed" class="capture-feed" aria-label="患者消息与对应记录"></div>
+      <p id="capture-status" class="sr-only" aria-live="polite"></p>
+    </section>
+  </div>
+</main>
+<dialog id="database" aria-labelledby="database-heading">
+  <div class="dialog-head"><div><h2 id="database-heading">RWD 数据库</h2><p id="database-count"></p></div><form method="dialog"><button type="submit" class="btn"><svg aria-hidden="true"><use href="#close"/></svg>关闭</button></form></div>
+  <div class="dialog-body" id="database-contents"></div>
+</dialog>
+<script>
+'use strict';
+
+const chatEndpoint = document.querySelector('meta[name="rwd-chat-api"]')?.content || '/api/chat';
+const drug = '奥泽悦';
+const initialSession = 'DEMO-ORZEYFUL-V2';
+const greeting = '你好，我是奥泽悦用药助手。可以问我用药问题，也可以说说近期用药后有什么感受。';
+const openingQuestions = ['奥泽悦适用于哪些患者？','复诊前需要整理哪些用药记录？','该怎么记录白天突然睡着的情况？'];
+const starter = '我从2026年11月12日开始吃奥泽悦。近7天平均每天白天会突然睡着2次，过去7天猝倒了3次。';
+const nextStarter = '更正一下，近7天平均每天白天突然睡着1次。近7天内我又猝倒了2次。';
+const seedPeriod = {key:'2026-11-19/2026-11-25',label:'近7天 · 11月19日 至 11月25日'};
+function seedObservation(message, field_code, field_name, value, unit, literal, proposed_update) {
+  const start = message.indexOf(literal);
+  return {field_code,field_name,value,unit,proposed_update,status:'患者自报',
+    evidence:[{text:literal,start,end:start+literal.length}]};
+}
+const sample = {
+  answer:'你提到 11 月 12 日开始服药，近 7 天白天仍有突然睡着的情况，还发生了 3 次猝倒。你可以记下每次发作的时间和当时在做什么，方便复诊时和医生沟通。',
+  model:'预设示例',
+  suggestions:['怎样区分日间嗜睡和猝倒？','记录猝倒发作时要写下哪些信息？','复诊时怎样描述奥泽悦用药后的变化？'],
+  observations:[
+    seedObservation(starter,'EX-02','首次服药日期','2026-11-12','','我从2026年11月12日开始吃奥泽悦',
+      {mode:'replace',policy:'replace',period:{key:'baseline',label:'基线'}}),
+    seedObservation(starter,'EF-CSA-06','白天不可控睡眠发作次数',2,'次/日','近7天平均每天白天会突然睡着2次',
+      {mode:'replace',policy:'replace',period:seedPeriod}),
+    seedObservation(starter,'EF-CSA-02','猝倒发作次数（近7天）',3,'次','过去7天猝倒了3次',
+      {mode:'replace',policy:'count',period:seedPeriod})
+  ]
+};
+const nextSample = {
+  answer:'收到。你更正了近 7 天白天突然睡着的日均次数，还补充了同一周期新增的 2 次猝倒。复诊时可以和医生一起看看近一周发作的变化。',
+  model:'预设示例',
+  suggestions:['怎样记录近 7 天的猝倒次数？','突然睡着时应记录哪些场景？','猝倒比前一周增多，复诊时怎么描述？'],
+  observations:[
+    seedObservation(nextStarter,'EF-CSA-06','白天不可控睡眠发作次数',1,'次/日','近7天平均每天白天突然睡着1次',
+      {mode:'replace',policy:'replace',period:seedPeriod}),
+    seedObservation(nextStarter,'EF-CSA-02','猝倒发作次数（近7天）',2,'次','近7天内我又猝倒了2次',
+      {mode:'increment',policy:'count',period:seedPeriod})
+  ]
+};
+const el = id => document.getElementById(id);
+const formatTime = new Intl.DateTimeFormat('zh-CN', {hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Shanghai'});
+const datetime = new Intl.DateTimeFormat('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Shanghai'});
+const idPart = () => globalThis.crypto?.randomUUID?.() ?? (Date.now().toString(36) + '-' + Math.random().toString(36).slice(2));
+let currentPatient;
+function patientId() {
+  if (currentPatient) return currentPatient;
+  const generated = 'P-' + idPart().replaceAll('-', '').slice(-8).toUpperCase();
+  try {
+    const existing = localStorage.getItem('rwd-orzeyful-patient');
+    currentPatient = existing || generated;
+    if (!existing) localStorage.setItem('rwd-orzeyful-patient', currentPatient);
+  } catch {
+    currentPatient = generated;
+  }
+  return currentPatient;
+}
+const icon = name => '<svg aria-hidden="true"><use href="#' + name + '"/></svg>';
+const control = {busy:false, generation:0, session:initialSession, turns:0, pending:null, history:[], entries:new Map(), coreAsked:new Set(), activeFollowup:null, suggestionsOwner:null};
+
+function element(tag, text, className) {
+  const node = document.createElement(tag);
+  if (text !== undefined) node.textContent = text;
+  if (className) node.className = className;
+  return node;
+}
+
+function markEvidence(container, message, records) {
+  container.replaceChildren();
+  const sorted = records.flatMap(record => record.evidence).sort((a,b) => a.start - b.start);
+  const ranges = [];
+  for (const span of sorted) {
+    const last = ranges.at(-1);
+    if (last && span.start <= last.end) last.end = Math.max(last.end, span.end);
+    else ranges.push({start:span.start,end:span.end});
+  }
+  let offset = 0;
+  for (const range of ranges) {
+    container.append(document.createTextNode(message.slice(offset, range.start)));
+    container.append(element('mark', message.slice(range.start, range.end)));
+    offset = range.end;
+  }
+  container.append(document.createTextNode(message.slice(offset)));
+}
+
+function describe(record) {
+  const value = record.value;
+  const display = Array.isArray(value) ? value.join('、') :
+    typeof value === 'object' && value !== null ? Object.entries(value).map(([key,item]) =>
+      ({days:'天数',reason:'原因',near_misses:'险情次数',accidents:'事故次数'}[key] ?? key) + ' ' + item).join('、') :
+    String(value);
+  return record.unit ? display + ' ' + record.unit : display;
+}
+
+const databaseKey = 'rwd-medication-demo-v1';
+const fallbackKey = databaseKey + '-records';
+let databaseConnection;
+function openDatabase() {
+  if (!databaseConnection) {
+    databaseConnection = new Promise((resolve, reject) => {
+      const request = indexedDB.open(databaseKey, 1);
+      request.onupgradeneeded = () => request.result.createObjectStore('observations', {keyPath:'record_id'});
+      request.onerror = () => reject(request.error);
+      request.onblocked = () => reject(new Error('Database upgrade blocked'));
+      request.onsuccess = () => resolve(request.result);
+    }).catch(() => null);
+  }
+  return databaseConnection;
+}
+
+async function useStore(mode, callback) {
+  const database = await openDatabase();
+  if (!database) return callback(null);
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction('observations', mode);
+    const result = callback(transaction.objectStore('observations'));
+    transaction.oncomplete = () => resolve(result?.result);
+    transaction.onabort = () => reject(transaction.error);
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+function readRecords() {
+  return useStore('readonly', store => store ? store.getAll() : JSON.parse(localStorage.getItem(fallbackKey) ?? '[]'));
+}
+
+const updateLabels = {replace:'覆盖', increment:'累加', append:'追加', merge:'追加'};
+
+function updateKey(record, proposal = record.proposed_update) {
+  return JSON.stringify([record.drug,record.patient_id,record.field_code,proposal?.period?.key ?? 'unscoped']);
+}
+
+function mergeValues(previous, value) {
+  return previous && typeof previous === 'object' && !Array.isArray(previous) &&
+    value && typeof value === 'object' && !Array.isArray(value) ? {...previous,...value} : value;
+}
+
+function addNumeric(previous, delta) {
+  return Number(((typeof previous === 'number' ? previous : 0) + delta).toFixed(8));
+}
+
+function incrementValues(previous, delta) {
+  if (typeof delta === 'number') return addNumeric(previous,delta);
+  const after = {...previous};
+  for (const [key, value] of Object.entries(delta)) {
+    after[key] = typeof value === 'number' ? addNumeric(previous?.[key],value) : value;
+  }
+  return after;
+}
+
+function asList(value) {
+  return value == null ? [] : Array.isArray(value) ? value : [value];
+}
+
+function applyUpdates(existing, incoming) {
+  const byId = new Map(existing.map(record => [record.record_id,record]));
+  const current = new Map();
+  const appendCounts = new Map();
+  let sequence = 0;
+
+  function register(record) {
+    const update = record.update;
+    if (!update) return;
+    sequence = Math.max(sequence,update.sequence);
+    if (update.mode === 'append') {
+      const key = updateKey(record);
+      appendCounts.set(key, Math.max(appendCounts.get(key) ?? 0, update.number));
+    } else if (!current.has(updateKey(record)) || current.get(updateKey(record)).sequence < update.sequence) {
+      current.set(updateKey(record),update);
+    }
+  }
+
+  existing.forEach(register);
+  return incoming.map(record => {
+    const alreadySaved = byId.get(record.record_id);
+    if (alreadySaved?.update) return alreadySaved;
+    const proposal = record.proposed_update ?? {mode:'replace',policy:'replace'};
+    const key = updateKey(record,proposal);
+    const previous = current.get(key);
+    const before = previous?.after ?? null;
+    const update = {mode:proposal.mode,sequence:++sequence, before,after:record.value};
+    if (proposal.period) update.period = proposal.period;
+    if (proposal.reason) update.reason = proposal.reason;
+    if (proposal.mode === 'append') {
+      update.number = (appendCounts.get(key) ?? 0) + 1;
+    } else if (proposal.mode === 'increment') {
+      update.delta = record.value;
+      update.after = incrementValues(before, record.value);
+      if (before === null || previous.partial) update.partial = true;
+    } else if (proposal.mode === 'merge') {
+      update.after = [...new Set([...asList(before),...asList(record.value)])];
+    } else if (proposal.policy === 'count') {
+      update.after = mergeValues(before, record.value);
+    }
+    const applied = {...record,update};
+    register(applied);
+    byId.set(applied.record_id,applied);
+    return applied;
+  });
+}
+
+async function writeRecords(records) {
+  const database = await openDatabase();
+  if (database) {
+    return new Promise((resolve,reject) => {
+      const transaction = database.transaction('observations','readwrite');
+      const store = transaction.objectStore('observations');
+      const existing = store.getAll();
+      let applied;
+      existing.onsuccess = () => {
+        applied = applyUpdates(existing.result,records);
+        for (const record of applied) store.put(record);
+      };
+      transaction.oncomplete = () => resolve(applied);
+      transaction.onabort = () => reject(transaction.error);
+      transaction.onerror = () => reject(transaction.error);
+    });
+  }
+  const storeLocally = () => {
+    const existing = JSON.parse(localStorage.getItem(fallbackKey) ?? '[]');
+    const applied = applyUpdates(existing,records);
+    const byId = new Map([...existing,...applied].map(record => [record.record_id,record]));
+    localStorage.setItem(fallbackKey,JSON.stringify([...byId.values()]));
+    return applied;
+  };
+  return navigator.locks ? navigator.locks.request(fallbackKey,storeLocally) : storeLocally();
+}
+
+function updateDescription(record) {
+  const update = record.update;
+  if (!update) return '';
+  const display = value => value == null ? '未记录' : describe({...record,value});
+  if (update.mode === 'append') {
+    return '第 ' + update.number + ' 条' + (update.reason ? ' · ' + update.reason : '');
+  }
+  const prefix = update.period?.label ? update.period.label + ' · ' : '';
+  if (update.mode === 'increment') {
+    return prefix + display(update.before) + ' + ' + display(update.delta) + ' → ' + display(update.after) +
+      (update.partial ? '（仅本库已记录增量）' : '');
+  }
+  return prefix + display(update.before) + ' → ' + display(update.after);
+}
+
+const coreFields = [{"field_code":"DM-BI-02","group":"基础与诊断","field_name":"年龄"},{"field_code":"DM-BI-03","group":"基础与诊断","field_name":"性别"},{"field_code":"DX-MV-02","group":"基础与诊断","field_name":"确诊日期"},{"field_code":"DX-MV-08","group":"基础与诊断","field_name":"当前核心症状清单"},{"field_code":"EX-02","group":"奥泽悦用药","field_name":"首次服药日期"},{"field_code":"EX-04","group":"奥泽悦用药","field_name":"每日总剂量"},{"field_code":"EX-05","group":"奥泽悦用药","field_name":"每日服药次数"},{"field_code":"EX-06","group":"奥泽悦用药","field_name":"服药时间点"},{"field_code":"EX-09","group":"奥泽悦用药","field_name":"剂量调整事件"},{"field_code":"EX-12","group":"奥泽悦用药","field_name":"漏服情况"},{"field_code":"EX-17","group":"奥泽悦用药","field_name":"是否联合其他NT1治疗"},{"field_code":"EX-18","group":"奥泽悦用药","field_name":"停药日期"},{"field_code":"EX-19","group":"奥泽悦用药","field_name":"停药原因"},{"field_code":"EF-ESS-01","group":"症状与疗效","field_name":"ESS 总得分"},{"field_code":"EF-CSA-02","group":"症状与疗效","field_name":"猝倒发作次数(近7天)"},{"field_code":"EF-CSA-03","group":"症状与疗效","field_name":"猝倒触发情境"},{"field_code":"EF-CSA-04","group":"症状与疗效","field_name":"猝倒型式与部位"},{"field_code":"EF-CSA-05","group":"症状与疗效","field_name":"猝倒持续时间"},{"field_code":"EF-CSA-06","group":"症状与疗效","field_name":"白天不可控睡眠发作次数"},{"field_code":"EF-CSA-09","group":"症状与疗效","field_name":"睡眠瘫痪频率"},{"field_code":"EF-CSA-11","group":"症状与疗效","field_name":"夜间睡眠时长"},{"field_code":"EF-CSA-13","group":"症状与疗效","field_name":"患者总体改善印象(PGI-I)"},{"field_code":"AE-AE-02","group":"安全性与生活风险","field_name":"不良事件名称"},{"field_code":"AE-AE-03","group":"安全性与生活风险","field_name":"不良事件开始日期"},{"field_code":"AE-AE-05","group":"安全性与生活风险","field_name":"不良事件严重程度"},{"field_code":"AE-AE-07","group":"安全性与生活风险","field_name":"不良事件处理措施"},{"field_code":"AE-AE-08","group":"安全性与生活风险","field_name":"不良事件转归"},{"field_code":"AE-INS-01","group":"安全性与生活风险","field_name":"失眠是否发生"},{"field_code":"AE-URI-01","group":"安全性与生活风险","field_name":"尿频/尿急是否发生"},{"field_code":"AE-TA-01","group":"安全性与生活风险","field_name":"是否发生驾驶/交通事故或险情"}];
+const clientCore = new Map(coreFields.map(field => [field.field_code,field]));
+const coreGroups = [...new Set(coreFields.map(field=>field.group))];
+
+function coreKey(field) {
+  return field.part ? field.field_code + '.' + field.part : field.field_code;
+}
+
+function coreSnapshot(records, session) {
+  const matching = records.filter(row => row.schema_version === 'v2' && row.patient_id === session &&
+    row.drug === drug && clientCore.has(row.field_code));
+  const ids = new Map(matching.map(row=>[row.record_id,row]));
+  const complete = new Set(matching.filter(row=>row.field_code !== 'EX-12').map(row=>row.field_code));
+  const lastMissed = matching.filter(row=>row.field_code === 'EX-12')
+    .sort((a,b)=>(b.update?.sequence ?? 0)-(a.update?.sequence ?? 0) || b.recorded_at.localeCompare(a.recorded_at))[0];
+  const seen = new Set();
+  const missedValue = {};
+  for (let row = lastMissed; row && !seen.has(row.record_id); row = ids.get(row.related_record_id)) {
+    seen.add(row.record_id);
+    const value = row.update?.after ?? row.value;
+    if (typeof (missedValue.days) !== 'number' && typeof value?.days === 'number') missedValue.days = value.days;
+    if (!missedValue.reason && value?.reason) missedValue.reason = value.reason;
+  }
+  const missed = Object.keys(missedValue);
+  if (missed.length === 2) complete.add('EX-12');
+  return {complete,missed,lastMissed};
+}
+
+async function loadCoreSnapshot(session) {
+  try {
+    return coreSnapshot(await readRecords(),session);
+  } catch {
+    return coreSnapshot([],session);
+  }
+}
+
+function renderCoreProgress(snapshot) {
+  el('core-count').textContent = snapshot.complete.size + ' / ' + coreFields.length + ' 已采集';
+  const wrapper = el('core-fields');
+  const sections = [];
+  for (const group of coreGroups) {
+    const section = element('section');
+    section.append(element('h3',group));
+    const items = element('ul');
+    for (const field of coreFields.filter(row => row.group === group)) {
+      const item = element('li');
+      const state = snapshot.complete.has(field.field_code) ? '已采集' :
+        field.field_code === 'EX-12' && snapshot.missed.length ? '待补充' : '未采集';
+      const status = element('span',state,'core-state');
+      status.dataset.state = state;
+      const label = element('span',field.field_name);
+      label.append(element('code',field.field_code,'core-code'));
+      item.append(label,status);
+      items.append(item);
+    }
+    section.append(items);
+    sections.push(section);
+  }
+  wrapper.replaceChildren(...sections);
+}
+
+async function syncCoreProgress() {
+  const session = control.session;
+  const generation = control.generation;
+  const snapshot = await loadCoreSnapshot(session);
+  if (session === control.session && generation === control.generation) renderCoreProgress(snapshot);
+}
+
+function linkCoreSupplement(record, run) {
+  const pending = run.pendingCore;
+  if (!pending || record.field_code !== pending.field_code || record.collected_via !== 'follow_up') return record;
+  const linked = {...record,followup_of_message_id:pending.messageId};
+  if (pending.anchor && record.field_code === 'EX-12') {
+    linked.related_record_id = pending.anchor.record_id;
+    const period = pending.anchor.proposed_update?.period;
+    if (period && !record.proposed_update.period) linked.proposed_update = {mode:'replace',policy:'count',period};
+  }
+  return linked;
+}
+
+function resolveAnsweredFollowup(run) {
+  if (!run.pendingCore) return;
+  const answered = run.records.some(record=>record.followup_of_message_id === run.pendingCore.messageId &&
+    (run.pendingCore.field_code !== 'EX-12' || record.value?.[run.pendingCore.part] !== undefined));
+  if (!answered) return;
+  const source = control.entries.get(run.pendingCore.messageId);
+  if (source?.followup) {
+    source.followup.answered = true;
+    renderTurn(source);
+  }
+}
+
+function appendCoreQuestion(content, followup) {
+  if (!followup) return;
+  const block = element('section',undefined,'assistant-followup');
+  block.setAttribute('aria-label','补充一下');
+  const reply = element('button','补充信息','followup-reply');
+  reply.type = 'button';
+  reply.dataset.messageId = followup.messageId;
+  reply.hidden = true;
+  reply.addEventListener('click',() => {
+    if (control.activeFollowup?.messageId !== followup.messageId) return;
+    el('message-input').focus({preventScroll:true});
+  });
+  block.append(element('h3','补充一下'),element('p',followup.question),reply);
+  content.append(block);
+}
+
+function showCoreFollowup(run) {
+  if (!run.followup) return null;
+  const {field_code,field_name,question,answered} = run.followup;
+  const note = element('div',undefined,'core-turn');
+  const header = element('div',undefined,'core-turn-head');
+  const status = element('span',answered ? '已补充' : '待回答','core-state');
+  status.dataset.state = answered ? '已采集' : '待补充';
+  header.append(element('strong','核心字段追问'),element('code',field_code,'sink'),status);
+  note.append(header,element('p',question),element('small',field_name));
+  return note;
+}
+
+
+function makeSuggestions(questions) {
+  if (!Array.isArray(questions) || questions.length !== 3) return;
+  const box = element('section',undefined,'suggestions');
+  box.setAttribute('aria-label','猜你想问');
+  const list = element('div',undefined,'suggestion-list');
+  for (const question of questions) {
+    const button = element('button',question,'suggestion');
+    button.type = 'button';
+    button.disabled = control.busy;
+    button.addEventListener('click',() => sendMessage(question,{preserveDraft:true}));
+    list.append(button);
+  }
+  box.append(element('h3','猜你想问'),list);
+  return box;
+}
+
+function storeOlderSuggestions(owner, suggestions) {
+  const history = element('details',undefined,'suggestion-history');
+  history.append(element('summary','猜你想问'),suggestions);
+  owner.querySelector('.message-content').append(history);
+}
+
+function showDockedSuggestions(owner, suggestions) {
+  const dock = el('question-dock');
+  const previous = control.suggestionsOwner;
+  if (previous?.isConnected && previous !== owner && dock.firstElementChild) {
+    storeOlderSuggestions(previous,dock.firstElementChild);
+  }
+  dock.replaceChildren(suggestions);
+  dock.hidden = false;
+  control.suggestionsOwner = owner;
+}
+
+function appendMessage(role, value, messageId, time = new Date(), afterMessageId, suggestions, followup) {
+  const group = element('article', undefined, 'message ' + role);
+  if (messageId) group.id = messageId;
+  const content = element('div', undefined, 'message-content');
+  const meta = element('div', undefined, 'sr-only');
+  const stamp = element('time', formatTime.format(time));
+  stamp.dateTime = time.toISOString();
+  meta.append(element('strong', role === 'patient' ? '患者' : '奥泽悦助手'), stamp);
+  const bubble = element(role === 'patient' ? 'button' : 'div', value, 'bubble');
+  if (role === 'patient') {
+    bubble.type = 'button';
+    bubble.title = '查看对应的数据映射';
+    bubble.addEventListener('click', () => locateTurn(messageId));
+  }
+  content.append(meta, bubble);
+  if (role === 'assistant') appendCoreQuestion(content,followup);
+  group.append(content);
+  const messages = el('messages');
+  const anchor = afterMessageId && el(afterMessageId);
+  if (anchor) anchor.after(group);
+  else messages.append(group);
+  const questions = role === 'assistant' && makeSuggestions(suggestions);
+  if (questions) {
+    if (group.nextElementSibling) storeOlderSuggestions(group,questions);
+    else showDockedSuggestions(group,questions);
+  }
+  if (questions && group.offsetHeight > messages.clientHeight - 16) {
+    messages.scrollTop += group.getBoundingClientRect().top - messages.getBoundingClientRect().top - 9;
+  } else {
+    messages.scrollTop = messages.scrollHeight;
+  }
+  el('phone-time').textContent = formatTime.format(time);
+  return group;
+}
+
+function mappingTable(records) {
+  const wrap = element('div', undefined, 'mapping-scroll');
+  const table = element('table', undefined, 'mapping-table');
+  const header = table.createTHead().insertRow();
+  for (const name of ['字段名称', '提取值', 'RWD 字段编号']) {
+    const column = element('th', name);
+    column.scope = 'col';
+    header.append(column);
+  }
+  const body = table.createTBody();
+  for (const record of records) {
+    const row = body.insertRow();
+    const field = row.insertCell();
+    const isCore = clientCore.has(record.field_code);
+    field.append(element('strong', record.field_name),element('span',isCore ? '核心' : '补充',isCore ? 'field-tier core' : 'field-tier'));
+    if (record.followup_of_message_id) field.append(element('div','追问补充','field-review'));
+    if (record.status.includes('待核实')) field.append(element('div', '待核实', 'field-review'));
+    if (record.collection_window) field.title = record.collection_window;
+    row.insertCell().textContent = describe(record);
+    const sink = row.insertCell();
+    sink.className = 'sink-cell';
+    sink.append(element('code', record.field_code, 'sink'));
+    if (record.update) {
+      const change = body.insertRow();
+      change.className = 'update-row';
+      const cell = change.insertCell();
+      cell.colSpan = 3;
+      cell.append(element('span', updateLabels[record.update.mode], 'operation ' + record.update.mode),
+        element('span', updateDescription(record), 'update-note'));
+    }
+  }
+  wrap.append(table);
+  return wrap;
+}
+
+const turnStates = {
+  recognizing:{label:'DeepSeek 处理中', tone:'neutral'},
+  unavailable:{label:'问答失败', tone:'error'},
+  analysis_unavailable:{label:'待提取', tone:'error'},
+  writing:{label:'正在入库', tone:'neutral'},
+  saved:{label:'已入库', tone:'success'},
+  skipped:{label:'未入库', tone:'neutral'},
+  failed:{label:'入库失败', tone:'error'}
+};
+
+function action(label, handler) {
+  const button = element('button', label, 'text-action');
+  button.type = 'button';
+  button.addEventListener('click', handler);
+  return button;
+}
+
+function setCounts() {
+  const saved = Array.from(control.entries.values()).reduce((count, run) =>
+    count + (run.status === 'saved' ? run.records.length : 0), 0);
+  el('turn-count').textContent = control.entries.size;
+  el('record-count').textContent = saved;
+}
+
+function renderTurn(run) {
+  const {records, status, text, time, messageId, batch, nodes} = run;
+  const state = turnStates[status];
+  const count = records.length;
+  const showRecords = count > 0 && status !== 'recognizing';
+  nodes.badge.dataset.tone = state.tone;
+  nodes.badge.textContent = status === 'saved' ? '已入库 ' + count + ' 条' : state.label;
+  if (showRecords) markEvidence(nodes.quote, text, records);
+  else nodes.quote.textContent = text;
+  const heading = element('div', undefined, 'turn-actions');
+  heading.append(
+    element('h3', '提取与入库映射'),
+    action('定位对话', () => locateMessage(messageId))
+  );
+  nodes.body.replaceChildren(heading);
+  if (!showRecords) {
+    const message = status === 'skipped' ? '本轮没有可按字段表入库的自述。' :
+      status === 'unavailable' ? run.error : status === 'analysis_unavailable' ?
+      '本轮已回答，RWD 字段提取待重试。' : '正在回答问题并识别可提取字段…';
+    nodes.body.append(element('p', message, status === 'recognizing' ? 'ongoing' : 'empty'));
+    if (status === 'unavailable' || status === 'analysis_unavailable') {
+      nodes.body.append(action(status === 'unavailable' ? '重试问答' : '重试提取', () => requestAnswer(run)));
+    }
+  } else {
+    nodes.body.append(mappingTable(records));
+    const receipt = element('div', undefined, 'receipt');
+    receipt.dataset.tone = state.tone;
+    const marker = element('span');
+    marker.innerHTML = icon(status === 'saved' ? 'check' : status === 'failed' ? 'info' : 'clock');
+    const label = status === 'saved' ? '已写入 observations · ' + count + ' 条记录' :
+      status === 'failed' ? '写入失败' : status === 'writing' ? '正在写入 observations' : '已提取 ' + count + ' 条记录';
+    receipt.append(marker, element('strong', label));
+    if (status === 'saved') receipt.append(action('查看入库记录', () => showDatabase(batch)));
+    if (status === 'failed') receipt.append(action('重试入库', () => persist(run)));
+    nodes.body.append(receipt);
+    const details = element('details', undefined, 'details');
+    details.append(element('summary', '结构化 JSON'), element('pre', JSON.stringify(records, null, 2)));
+    nodes.body.append(details);
+  }
+  const activeQuestion = showCoreFollowup(run);
+  if (activeQuestion) nodes.body.append(activeQuestion);
+  el('capture-status').textContent = '患者 ' + formatTime.format(time) + '，' + nodes.badge.textContent;
+  setCounts();
+}
+
+function addTurn(run) {
+  control.entries.set(run.messageId, run);
+  const feed = el('capture-feed');
+  feed.querySelector('.feed-empty')?.remove();
+  for (const item of feed.querySelectorAll('.turn[open]')) item.open = false;
+  const card = element('details', undefined, 'turn');
+  card.id = 'capture-' + run.messageId;
+  card.open = true;
+  const title = element('summary', undefined, 'turn-summary');
+  const stamp = element('time', formatTime.format(run.time));
+  stamp.dateTime = run.time.toISOString();
+  const author = element('span', '患者', 'turn-author');
+  author.append(stamp);
+  const meta = element('span', undefined, 'turn-meta');
+  const badge = element('span', undefined, 'badge');
+  const disclosure = element('span', undefined, 'chevron');
+  disclosure.innerHTML = icon('chevron');
+  meta.append(badge, disclosure);
+  const quote = element('span', undefined, 'turn-quote');
+  title.append(author, meta, quote);
+  const body = element('div', undefined, 'turn-body');
+  card.append(title, body);
+  run.nodes = {card, badge, quote, body};
+  feed.prepend(card);
+  feed.scrollTop = 0;
+  renderTurn(run);
+}
+
+function locateTurn(messageId) {
+  const card = control.entries.get(messageId)?.nodes.card;
+  if (!card) return;
+  card.open = true;
+  const feed = el('capture-feed');
+  if (window.matchMedia('(max-width:790px)').matches) {
+    card.scrollIntoView({block:'start', behavior:'instant'});
+  } else {
+    feed.scrollTop += card.getBoundingClientRect().top - feed.getBoundingClientRect().top - 12;
+  }
+}
+
+function locateMessage(messageId) {
+  const message = el(messageId);
+  if (!message) return;
+  for (const visited of document.querySelectorAll('.message.revisit')) visited.classList.remove('revisit');
+  message.classList.add('revisit');
+  const list = el('messages');
+  list.scrollTop += message.getBoundingClientRect().top - list.getBoundingClientRect().top - 10;
+  if (window.matchMedia('(max-width:790px)').matches) {
+    el('messages').scrollIntoView({block:'nearest', behavior:'instant'});
+  }
+}
+
+function setBusy(busy) {
+  control.busy = busy;
+  el('send').disabled = busy || !el('message-input').value.trim();
+  for (const button of document.querySelectorAll('.suggestion,.inline-retry,.followup-reply,.assistant-result-note button')) button.disabled = busy;
+}
+
+function resizeInput() {
+  const input = el('message-input');
+  input.style.height = '36px';
+  input.style.height = Math.min(116, Math.max(36, input.scrollHeight)) + 'px';
+}
+
+function syncReplyTarget() {
+  const followup = control.activeFollowup;
+  el('reply-target').hidden = !followup;
+  el('reply-label').textContent = followup ? '补充：' + followup.field_name : '';
+  for (const button of el('messages').querySelectorAll('.followup-reply')) {
+    button.hidden = button.dataset.messageId !== followup?.messageId;
+  }
+}
+
+function beginSession(session, started = new Date()) {
+  control.generation += 1;
+  control.session = session ?? patientId();
+  control.turns = 0;
+  control.pending?.abort();
+  control.pending = null;
+  control.history = [];
+  control.coreAsked.clear();
+  control.activeFollowup = null;
+  control.suggestionsOwner = null;
+  el('question-dock').replaceChildren();
+  el('question-dock').hidden = true;
+  syncReplyTarget();
+  control.entries.clear();
+  el('messages').replaceChildren();
+  appendMessage('assistant',greeting,null,started,null,openingQuestions);
+  el('message-input').value = '';
+  resizeInput();
+  el('capture-feed').replaceChildren(element('p', '暂无患者消息', 'empty feed-empty'));
+  el('capture-status').textContent = '';
+  setCounts();
+  renderCoreProgress(coreSnapshot([],control.session));
+  syncCoreProgress();
+  setBusy(false);
+}
+
+async function persist(run) {
+  if (run.generation !== control.generation) return;
+  setBusy(true);
+  run.status = 'writing';
+  renderTurn(run);
+  try {
+    run.records = await writeRecords(run.records);
+    if (run.generation !== control.generation) return;
+    run.status = 'saved';
+    renderTurn(run);
+    resolveAnsweredFollowup(run);
+    await syncCoreProgress();
+  } catch (error) {
+    if (run.generation !== control.generation) return;
+    run.status = 'failed';
+    renderTurn(run);
+  } finally {
+    if (run.generation === control.generation) setBusy(false);
+  }
+}
+
+function assistantNotice(run, message, tone, retryLabel) {
+  const group = appendMessage('assistant',message,null,new Date(),run.messageId);
+  group.classList.add('assistant-notice',tone);
+  if (!retryLabel) {
+    group.setAttribute('role','status');
+    return group;
+  }
+  const retry = element('button',retryLabel,'inline-retry');
+  retry.type = 'button';
+  retry.addEventListener('click',() => requestAnswer(run));
+  group.querySelector('.message-content').append(retry);
+  return group;
+}
+
+async function askGateway(body, signal) {
+  for (let attempt=0;attempt<2;attempt+=1) {
+    let response;
+    try {
+      response = await fetch(chatEndpoint,{
+        method:'POST',headers:{'Content-Type':'application/json'},body,signal
+      });
+    } catch (error) {
+      if (signal.aborted) throw error;
+      if (attempt === 0) continue;
+      throw new Error('网络连接暂时中断，请重试原问题。');
+    }
+    let result;
+    try {
+      result = await response.json();
+    } catch {
+      if (signal.aborted) throw signal.reason;
+      if (attempt === 0 && response.status >= 500) continue;
+      if (response.status === 401 || response.status === 403) throw new Error('页面连接暂未通过，请刷新页面后重试。');
+      if (response.status === 429) throw new Error('请求过于频繁，请稍后重试原问题。');
+      throw new Error('问答站点暂未返回有效答复，请重试原问题。');
+    }
+    if (!response.ok) throw new Error(result?.error || '这次问答未完成，请重试原问题。');
+    if (typeof result?.answer !== 'string' || !Array.isArray(result.observations)) {
+      throw new Error('这次未收到完整回答，请重试原问题。');
+    }
+    return result;
+  }
+}
+
+async function requestAnswer(run) {
+  if (run.generation !== control.generation || control.busy) return;
+  setBusy(true);
+  run.status = 'recognizing';
+  renderTurn(run);
+  run.errorBubble?.remove();
+  run.errorBubble = null;
+  const waiting = assistantNotice(run,run.answerBubble ? '正在重新提取患者自述…' : '正在回答你的问题…','pending-answer');
+  const pending = new AbortController();
+  control.pending = pending;
+  let timedOut = false;
+  const limit = setTimeout(() => {
+    timedOut = true;
+    pending.abort();
+  },42_000);
+  const patience = setTimeout(() => {
+    waiting.querySelector('.bubble').textContent = '仍在处理，稍等片刻…';
+  },5500);
+  try {
+    if (location.protocol === 'file:') throw new Error('请打开在线页面使用奥泽悦问答。');
+    run.coreSnapshot = await loadCoreSnapshot(run.session);
+    if (run.generation !== control.generation) return;
+    renderCoreProgress(run.coreSnapshot);
+    const previous = run.pendingCore;
+    const body = JSON.stringify({
+      message:run.text,history:run.history.map(({role,content}) => ({
+        role,content:role === 'assistant' ? content.slice(-500) : content.slice(0,500)
+      })),
+      core:{complete:[...run.coreSnapshot.complete],missed:run.coreSnapshot.missed,asked:[...control.coreAsked]},
+      ...(previous ? {pending_core:{field_code:previous.field_code,part:previous.part,asked_on:previous.asked_on}} : {})
+    });
+    const result = await askGateway(body,pending.signal);
+    if (run.generation !== control.generation) return;
+    waiting.remove();
+    try {
+      await handleAnswer(run,result);
+    } catch {
+      throw new Error('页面暂未显示完整结果，请重试原问题。');
+    }
+  } catch (error) {
+    if (run.generation !== control.generation) return;
+    waiting.remove();
+    run.status = run.answerBubble ? 'analysis_unavailable' : 'unavailable';
+    run.error = timedOut ? '这次回答超时，请重试原问题。' : error?.message || '这次问答未完成，请重试原问题。';
+    run.errorBubble = assistantNotice(run,run.error,'failed-answer',run.answerBubble ? '重试提取' : '重试原问题');
+    renderTurn(run);
+  } finally {
+    waiting.remove();
+    clearTimeout(limit);
+    clearTimeout(patience);
+    if (control.pending === pending) control.pending = null;
+    if (run.generation === control.generation) setBusy(false);
+  }
+}
+
+async function handleAnswer(run, result) {
+  run.records = result.observations.map((record, index) => ({
+    record_id:run.batch + '-' + (index + 1), batch_id:run.batch, patient_id:run.session, message_id:run.messageId,
+    source:run.initial ? '预设示例' : '患者自报', synthetic:run.initial, recorded_at:run.time.toISOString(),
+    schema_version:'v2', engine:result.model, cohort_context:'NT1 · 奥泽悦用药场景', drug, ...linkCoreSupplement(record,run)
+  }));
+  run.followup = null;
+  if (clientCore.has(result.follow_up?.field_code) && typeof result.follow_up.question === 'string') {
+    const anchor = run.records.find(row => row.field_code === 'EX-12') ?? run.coreSnapshot?.lastMissed;
+    run.followup = {...result.follow_up,messageId:run.messageId,
+      ...(result.follow_up.field_code === 'EX-12' && anchor ? {anchor} : {})};
+  }
+  run.answerBubble?.remove();
+  run.answerBubble = appendMessage('assistant',result.answer,null,run.time,run.messageId,result.suggestions,run.followup);
+  if (result.analysis_pending) {
+    const notice = element('div',undefined,'assistant-result-note');
+    notice.append(element('span','RWD 字段待提取。'),action('重试提取',()=>requestAnswer(run)));
+    run.answerBubble.querySelector('.message-content').append(notice);
+  }
+  if (!run.initial && run.index === control.turns) {
+    control.activeFollowup = run.followup ?? null;
+    syncReplyTarget();
+    if (run.followup) control.coreAsked.add(coreKey(run.followup));
+    const assistantText = run.followup ? result.answer + '\n' + run.followup.question : result.answer;
+    control.history = [...run.history,
+      {role:'user',content:run.text},{role:'assistant',content:assistantText}].slice(-6);
+  }
+  if (run.records.length) {
+    await persist(run);
+    return;
+  }
+  run.status = result.analysis_pending ? 'analysis_unavailable' : 'skipped';
+  renderTurn(run);
+}
+
+function sendMessage(value, options = {}) {
+  const text = value.trim().slice(0,500);
+  if (!text || control.busy) return;
+  if (!options.initial && control.session === initialSession) control.session = patientId();
+  const {generation, session} = control;
+  const index = ++control.turns;
+  const batchStem = session + '-' + String(index).padStart(2, '0');
+  const initial = Boolean(options.initial);
+  const batch = initial ? batchStem : batchStem + '-' + idPart().replaceAll('-', '').slice(-8);
+  const messageId = 'message-' + batch;
+  const time = options.time ?? new Date();
+  const run = {generation, session, index, batch, time, messageId, text, initial,
+    history:[...control.history], pendingCore:control.activeFollowup, records:[], status:'recognizing'};
+  appendMessage('patient', text, messageId, time);
+  addTurn(run);
+  if (!options.preserveDraft) el('message-input').value = '';
+  resizeInput();
+  if (options.result) {
+    setBusy(true);
+    return handleAnswer(run, options.result).finally(() => {
+      if (generation === control.generation) setBusy(false);
+    });
+  }
+  return requestAnswer(run);
+}
+async function showDatabase(batch) {
+  const dialog = el('database');
+  el('database-count').textContent = '正在读取本地记录…';
+  el('database-contents').replaceChildren();
+  if (!dialog.open) dialog.showModal();
+  try {
+    const entries = await readRecords();
+    if (!dialog.open) return;
+    const records = entries.filter(item => item.drug === drug && item.schema_version === 'v2' && (!batch || item.batch_id === batch))
+      .sort((a,b) => b.recorded_at.localeCompare(a.recorded_at) || a.record_id.localeCompare(b.record_id));
+    el('database-count').textContent = (batch ? '批次 ' + batch + '，' : '当前药品共有 ') + records.length + ' 条记录';
+    if (!records.length) {
+      el('database-contents').replaceChildren(element('p', '暂无入库记录。', 'empty'));
+      return;
+    }
+    const items = [];
+    for (const record of records) {
+      const details = element('details', undefined, 'stored');
+      details.open = Boolean(batch);
+      details.append(
+        element('summary', record.field_code + ' · ' + record.field_name),
+        element('p', describe(record) + ' · ' + record.status),
+        element('p', '患者原话：“' + record.evidence.map(span => span.text).join('，') + '”'),
+        element('p', '记录编号 ' + record.record_id + ' · ' + datetime.format(new Date(record.recorded_at)))
+      );
+      if (record.update) details.append(element('p', updateLabels[record.update.mode] + ' · ' + updateDescription(record)));
+      if (record.collection_window) details.append(element('p', '字段采集节点 ' + record.collection_window));
+      items.push(details);
+    }
+    el('database-contents').replaceChildren(...items);
+  } catch (error) {
+    el('database-count').textContent = '读取失败';
+    el('database-contents').replaceChildren(element('p', '无法读取数据库。', 'empty'));
+  }
+}
+
+el('composer').addEventListener('submit', event => {
+  event.preventDefault();
+  sendMessage(el('message-input').value);
+});
+el('message-input').addEventListener('input', () => {
+  resizeInput();
+  setBusy(control.busy);
+});
+el('message-input').addEventListener('keydown', event => {
+  if (event.key === 'Enter' && !event.shiftKey && !event.isComposing && event.keyCode !== 229) {
+    event.preventDefault();
+    if (!el('send').disabled) el('composer').requestSubmit();
+  }
+});
+el('new-session').addEventListener('click', () => {
+  beginSession();
+  el('message-input').focus({preventScroll:true});
+});
+el('close-reply').addEventListener('click',() => {
+  control.activeFollowup = null;
+  syncReplyTarget();
+  el('message-input').focus({preventScroll:true});
+});
+el('open-db').addEventListener('click', () => showDatabase());
+
+const initialTime = new Date('2026-11-25T10:24:00+08:00');
+beginSession(initialSession, initialTime);
+const initialGeneration = control.generation;
+sendMessage(starter, {initial:true, time:initialTime, result:sample}).then(() => {
+  if (control.generation !== initialGeneration || control.turns !== 1) return;
+  return sendMessage(nextStarter, {initial:true, time:new Date(initialTime.getTime()+120000), result:nextSample});
+});
+</script>
+</body>
+</html>
