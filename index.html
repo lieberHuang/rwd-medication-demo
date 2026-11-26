@@ -103,15 +103,7 @@ h1{padding:24px 0 20px;font-size:clamp(27px,3vw,39px);letter-spacing:-.045em;lin
 .suggestion-history summary{cursor:pointer;width:fit-content;padding:2px 0}
 .suggestion-history .suggestions{margin-top:4px}
 .suggestion-history h3{display:none}
-.question-dock{margin-bottom:6px;min-width:0}
-.question-dock .suggestion-list{
-  display:flex;overflow:auto;gap:5px;padding:1px 1px 4px;
-  scrollbar-width:thin;scroll-snap-type:x proximity;overscroll-behavior-x:contain;
-}
-.question-dock .suggestion{
-  flex:none;min-width:91px;max-width:min(58%,165px);min-height:44px;
-  scroll-snap-align:start;box-shadow:0 2px 5px #24202609;
-}
+.message-content>.suggestions{margin-top:8px}
 .reply-target{
   display:flex;align-items:center;justify-content:space-between;gap:7px;margin:0 0 6px;padding:5px 7px;
   border-left:2px solid #da8065;border-radius:0 7px 7px 0;background:#fce5d9;color:#774432;font-size:inherit;
@@ -235,7 +227,6 @@ dialog{width:min(700px,calc(100vw - 28px));color:var(--ink);border:1px solid var
               <span id="reply-label"></span>
               <button type="button" id="close-reply" aria-label="清除追问回复提示"><svg aria-hidden="true"><use href="#close"/></svg></button>
             </div>
-            <div id="question-dock" class="question-dock" hidden></div>
             <form id="composer" class="composer">
               <label class="sr-only" for="message-input">消息</label>
               <textarea id="message-input" rows="1" maxlength="500" placeholder="咨询奥泽悦用药…"></textarea>
@@ -663,14 +654,14 @@ function storeOlderSuggestions(owner, suggestions) {
   owner.querySelector('.message-content').append(history);
 }
 
-function showDockedSuggestions(owner, suggestions) {
-  const dock = el('question-dock');
+function showInlineSuggestions(owner, suggestions) {
   const previous = control.suggestionsOwner;
-  if (previous?.isConnected && previous !== owner && dock.firstElementChild) {
-    storeOlderSuggestions(previous,dock.firstElementChild);
+  const previousBox = previous?.querySelector('.message-content > .suggestions');
+  if (previousBox && previous?.isConnected) {
+    if (previous === owner) previousBox.remove();
+    else storeOlderSuggestions(previous,previousBox);
   }
-  dock.replaceChildren(suggestions);
-  dock.hidden = false;
+  owner.querySelector('.message-content').append(suggestions);
   control.suggestionsOwner = owner;
 }
 
@@ -698,7 +689,7 @@ function appendMessage(role, value, messageId, time = new Date(), afterMessageId
   const questions = role === 'assistant' && makeSuggestions(suggestions);
   if (questions) {
     if (group.nextElementSibling) storeOlderSuggestions(group,questions);
-    else showDockedSuggestions(group,questions);
+    else showInlineSuggestions(group,questions);
   }
   if (questions && group.offsetHeight > messages.clientHeight - 16) {
     messages.scrollTop += group.getBoundingClientRect().top - messages.getBoundingClientRect().top - 9;
@@ -887,7 +878,13 @@ function syncReplyTarget() {
   for (const button of messages.querySelectorAll('.followup-reply')) {
     button.hidden = button.dataset.messageId !== followup?.messageId;
   }
-  if (followup) messages.scrollTop = messages.scrollHeight;
+  const activeQuestion = messages.querySelector('.followup-reply:not([hidden])')?.parentElement;
+  if (activeQuestion) {
+    const visible = messages.getBoundingClientRect();
+    const question = activeQuestion.getBoundingClientRect();
+    if (question.top < visible.top) messages.scrollTop += question.top - visible.top - 8;
+    else if (question.bottom > visible.bottom) messages.scrollTop += question.bottom - visible.bottom + 8;
+  }
 }
 
 function beginSession(session, started = new Date()) {
@@ -900,8 +897,6 @@ function beginSession(session, started = new Date()) {
   control.coreAsked.clear();
   control.activeFollowup = null;
   control.suggestionsOwner = null;
-  el('question-dock').replaceChildren();
-  el('question-dock').hidden = true;
   syncReplyTarget();
   control.entries.clear();
   el('messages').replaceChildren();
@@ -914,7 +909,7 @@ function beginSession(session, started = new Date()) {
   renderCoreProgress(coreSnapshot([],control.session));
   syncCoreProgress().then(snapshot=>{
     if (control.suggestionsOwner === greetingMessage) {
-      showDockedSuggestions(greetingMessage,makeSuggestions(openingSuggestions(snapshot.complete)));
+      showInlineSuggestions(greetingMessage,makeSuggestions(openingSuggestions(snapshot.complete)));
     }
   });
   setBusy(false);
