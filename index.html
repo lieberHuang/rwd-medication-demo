@@ -487,8 +487,7 @@ function asList(value) {
   return value == null ? [] : Array.isArray(value) ? value : [value];
 }
 
-function applyUpdates(existing, incoming) {
-  const byId = new Map(existing.map(record => [record.record_id,record]));
+function applyUpdates(timeline) {
   const current = new Map();
   const appendCounts = new Map();
   let sequence = 0;
@@ -505,10 +504,7 @@ function applyUpdates(existing, incoming) {
     }
   }
 
-  existing.forEach(register);
-  return incoming.map(record => {
-    const alreadySaved = byId.get(record.record_id);
-    if (alreadySaved?.update) return alreadySaved;
+  return timeline.map(record => {
     const proposal = record.proposed_update ?? {mode:'replace',policy:'replace'};
     const key = updateKey(record,proposal);
     const previous = current.get(key);
@@ -529,9 +525,25 @@ function applyUpdates(existing, incoming) {
     }
     const applied = {...record,update};
     register(applied);
-    byId.set(applied.record_id,applied);
     return applied;
   });
+}
+
+function reconcileObservations(existing, incoming) {
+  const original = new Map(existing.map(record=>[record.record_id,record]));
+  const records = new Map(original);
+  for (const record of incoming) {
+    if (!records.get(record.record_id)?.update) records.set(record.record_id,record);
+  }
+  // Retries can save older messages after a newer correction. Replay in message order.
+  const timeline = [...records.values()].sort((a,b)=>a.recorded_at.localeCompare(b.recorded_at) ||
+    (a.update?.sequence ?? Number.MAX_SAFE_INTEGER) - (b.update?.sequence ?? Number.MAX_SAFE_INTEGER));
+  const reconciled = applyUpdates(timeline);
+  const byId = new Map(reconciled.map(record=>[record.record_id,record]));
+  return {
+    saved:incoming.map(record=>byId.get(record.record_id)),
+    changed:reconciled.filter(record=>JSON.stringify(record.update) !== JSON.stringify(original.get(record.record_id)?.update))
+  };
 }
 
 async function writeLocalRecords(records) {
@@ -541,22 +553,23 @@ async function writeLocalRecords(records) {
       const transaction = database.transaction('observations','readwrite');
       const store = transaction.objectStore('observations');
       const existing = store.getAll();
-      let applied;
+      let saved;
       existing.onsuccess = () => {
-        applied = applyUpdates(existing.result,records);
-        for (const record of applied) store.put(record);
+        const result = reconcileObservations(existing.result,records);
+        saved = result.saved;
+        for (const record of result.changed) store.put(record);
       };
-      transaction.oncomplete = () => resolve(applied);
+      transaction.oncomplete = () => resolve(saved);
       transaction.onabort = () => reject(transaction.error);
       transaction.onerror = () => reject(transaction.error);
     });
   }
   const storeLocally = () => {
     const existing = JSON.parse(localStorage.getItem(fallbackKey) ?? '[]');
-    const applied = applyUpdates(existing,records);
-    const byId = new Map([...existing,...applied].map(record => [record.record_id,record]));
+    const {saved,changed} = reconcileObservations(existing,records);
+    const byId = new Map([...existing,...changed].map(record => [record.record_id,record]));
     localStorage.setItem(fallbackKey,JSON.stringify([...byId.values()]));
-    return applied;
+    return saved;
   };
   return navigator.locks ? navigator.locks.request(fallbackKey,storeLocally) : storeLocally();
 }
@@ -655,6 +668,8 @@ const starterFieldSuggestions = {"DM-BI-02":"奥泽悦适用于哪些年龄段�
 const clientCore = new Map(coreFields.map(field => [field.field_code,field]));
 const followupCodes = new Set([...clientCore.keys(),...supplementaryCodes]);
 const coreGroups = [...new Set(coreFields.map(field=>field.group))];
+let coreRefresh = 0;
+let lastCoreSnapshot;
 
 function coreKey(field) {
   return field.part ? field.field_code + '.' + field.part : field.field_code;
@@ -682,14 +697,6 @@ function coreSnapshot(records, session) {
   return {complete,missed,lastMissed,supplementary,tagFacts:patientTagFacts(recorded)};
 }
 
-async function loadCoreSnapshot(session) {
-  try {
-    return coreSnapshot(await readRecords(),session);
-  } catch {
-    return coreSnapshot([],session);
-  }
-}
-
 function renderCoreProgress(snapshot) {
   el('core-count').textContent = snapshot.complete.size + ' / ' + coreFields.length + ' 已采集';
   const wrapper = el('core-fields');
@@ -715,15 +722,38 @@ function renderCoreProgress(snapshot) {
   wrapper.replaceChildren(...sections);
 }
 
+function refreshSavedTurns(records, session) {
+  const indexed = new Map(records.map(record=>[record.record_id,record]));
+  for (const run of control.entries.values()) {
+    if (run.session !== session || !['saved','failed'].includes(run.status) || !run.records.length) continue;
+    const stored = run.records.map(row=>indexed.get(row.record_id));
+    if (stored.some(row=>!row)) continue;
+    if (run.status === 'saved' && stored.every((row,i)=>JSON.stringify(row.update) === JSON.stringify(run.records[i].update))) continue;
+    run.records = stored;
+    run.status = 'saved';
+    renderTurn(run,false);
+  }
+}
+
 async function syncCoreProgress() {
   const session = control.session;
   const generation = control.generation;
-  const snapshot = await loadCoreSnapshot(session);
-  if (session === control.session && generation === control.generation) {
+  const request = ++coreRefresh;
+  const active = () => session === control.session && generation === control.generation && request === coreRefresh;
+  const cached = () => lastCoreSnapshot?.session === session && lastCoreSnapshot.generation === generation ? lastCoreSnapshot.snapshot : null;
+  try {
+    const records = await readRecords();
+    const snapshot = coreSnapshot(records,session);
+    if (!active()) return cached() ?? snapshot;
+    lastCoreSnapshot = {session,generation,snapshot};
+    refreshSavedTurns(records,session);
     renderCoreProgress(snapshot);
     void refreshPatientTags(snapshot.tagFacts);
+    return snapshot;
+  } catch {
+    if (active() && location.protocol !== 'file:') el('patient-tags-retry').hidden = false;
+    return cached() ?? coreSnapshot([],session);
   }
-  return snapshot;
 }
 
 function linkCoreSupplement(record, run) {
@@ -843,7 +873,10 @@ function resetPatientTags() {
 async function refreshPatientTags(facts) {
   if (location.protocol === 'file:') return;
   const body = JSON.stringify({facts});
-  if (tagJob?.body === body) return;
+  if (tagJob?.body === body) {
+    el('patient-tags-retry').hidden = true;
+    return;
+  }
   tagJob?.abort.abort();
   tagJob = undefined;
   el('patient-tags-retry').hidden = true;
@@ -1143,7 +1176,7 @@ function setCounts() {
   el('record-count').textContent = saved;
 }
 
-function renderTurn(run) {
+function renderTurn(run, announce = true) {
   const {records, status, text, time, messageId, batch, nodes} = run;
   const state = turnStates[status];
   const count = records.length;
@@ -1176,13 +1209,18 @@ function renderTurn(run) {
       status === 'failed' ? '写入失败' : status === 'writing' ? '正在写入 observations' : '已提取 ' + count + ' 条记录';
     receipt.append(marker, element('strong', label));
     if (status === 'saved') receipt.append(action('查看入库记录', () => showDatabase(batch)));
-    if (status === 'failed') receipt.append(action('重试入库', () => persist(run)));
+    if (status === 'failed') {
+      const retry = action('重试入库',()=>{ if (!control.busy) void persist(run); });
+      retry.classList.add('retry-records');
+      retry.disabled = control.busy;
+      receipt.append(retry);
+    }
     nodes.body.append(receipt);
     const details = element('details', undefined, 'details');
     details.append(element('summary', '结构化 JSON'), element('pre', JSON.stringify(records, null, 2)));
     nodes.body.append(details);
   }
-  el('capture-status').textContent = nodes.badge.hidden ? '' : '患者 ' + formatTime.format(time) + '，' + nodes.badge.textContent;
+  if (announce) el('capture-status').textContent = nodes.badge.hidden ? '' : '患者 ' + formatTime.format(time) + '，' + nodes.badge.textContent;
   setCounts();
 }
 
@@ -1242,7 +1280,7 @@ function locateMessage(messageId) {
 function setBusy(busy) {
   control.busy = busy;
   el('send').disabled = busy || !el('message-input').value.trim();
-  for (const button of document.querySelectorAll('.suggestion,.inline-retry,.assistant-result-note button')) button.disabled = busy;
+  for (const button of document.querySelectorAll('.suggestion,.inline-retry,.assistant-result-note button,.retry-records')) button.disabled = busy;
 }
 
 function resizeInput() {
@@ -1365,10 +1403,8 @@ async function requestAnswer(run) {
   },5500);
   try {
     if (location.protocol === 'file:') throw new Error('请打开在线页面使用奥泽悦问答。');
-    run.coreSnapshot = await loadCoreSnapshot(run.session);
+    run.coreSnapshot = await syncCoreProgress();
     if (run.generation !== control.generation) return;
-    renderCoreProgress(run.coreSnapshot);
-    void refreshPatientTags(run.coreSnapshot.tagFacts);
     const previous = run.pendingCore;
     const body = JSON.stringify({
       message:run.text,history:run.history.map(({role,content}) => ({
@@ -1450,6 +1486,7 @@ function sendMessage(value, options = {}) {
   if (!options.initial && control.session === initialSession) {
     control.session = patientId();
     resetPatientTags();
+    renderCoreProgress(coreSnapshot([],control.session));
   }
   const {generation, session} = control;
   const index = ++control.turns;
