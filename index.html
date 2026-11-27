@@ -1120,7 +1120,7 @@ function mappingTable(records) {
 const intentLabels = {symptom:'症状',treatment:'治疗',medication:'用药',history:'既往史'};
 
 const turnStates = {
-  recognizing:{label:'DeepSeek 处理中', tone:'neutral'},
+  recognizing:{label:'', tone:'neutral'},
   unavailable:{label:'问答失败', tone:'error'},
   analysis_unavailable:{label:'待提取', tone:'error'},
   writing:{label:'正在入库', tone:'neutral'},
@@ -1152,6 +1152,7 @@ function renderTurn(run) {
   nodes.intent.hidden = !nodes.intent.textContent;
   nodes.badge.dataset.tone = state.tone;
   nodes.badge.textContent = status === 'saved' ? '已入库 ' + count + ' 条' : state.label;
+  nodes.badge.hidden = !nodes.badge.textContent;
   if (showRecords) markEvidence(nodes.quote, text, records);
   else nodes.quote.textContent = text;
   const heading = element('div', undefined, 'turn-actions');
@@ -1181,7 +1182,7 @@ function renderTurn(run) {
     details.append(element('summary', '结构化 JSON'), element('pre', JSON.stringify(records, null, 2)));
     nodes.body.append(details);
   }
-  el('capture-status').textContent = '患者 ' + formatTime.format(time) + '，' + nodes.badge.textContent;
+  el('capture-status').textContent = nodes.badge.hidden ? '' : '患者 ' + formatTime.format(time) + '，' + nodes.badge.textContent;
   setCounts();
 }
 
