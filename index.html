@@ -88,10 +88,6 @@ h1{padding:24px 0 20px;font-size:clamp(27px,3vw,39px);letter-spacing:-.045em;lin
 }
 .patient .bubble:hover{background:linear-gradient(120deg,#ac2f1f,#b73e24)}
 .patient.revisit .bubble{outline:2px solid #b14430;outline-offset:2px}
-.assistant-followup{margin-top:7px;border-left:2px solid #d98367;background:#fff5ec;padding:6px 8px;border-radius:0 8px 8px 0;color:#633f32}
-.assistant-followup h3{margin-bottom:3px;color:#8b4c36}
-.assistant-followup p{overflow-wrap:anywhere}
-.followup-reply{border:0;background:transparent;color:#834530;padding:6px 0;text-decoration:underline;text-underline-offset:2px;font-weight:600}
 .suggestions{min-width:0}
 .suggestions h3{margin:0 0 5px 2px;color:#774736}
 .suggestion-list{display:grid;gap:5px}
@@ -107,13 +103,7 @@ h1{padding:24px 0 20px;font-size:clamp(27px,3vw,39px);letter-spacing:-.045em;lin
 .suggestion-history .suggestions{margin-top:4px}
 .suggestion-history h3{display:none}
 .message-content>.suggestions{margin-top:8px}
-.reply-target{
-  display:flex;align-items:center;justify-content:space-between;gap:7px;margin:0 0 6px;padding:5px 7px;
-  border-left:2px solid #da8065;border-radius:0 7px 7px 0;background:#fce5d9;color:#774432;
-}
-.reply-target span{min-width:0;overflow-wrap:anywhere}
-.reply-target button{border:0;background:transparent;color:#8b4d3b;padding:0;flex:none;line-height:1}
-.reply-target button svg{width:16px;height:16px}
+.messages[data-awaiting-followup] :is(.suggestions,.suggestion-history){display:none}
 .assistant-result-note{margin-top:5px}.assistant-result-note .text-action{color:#8f442f}
 .assistant-notice .bubble{background:#fff9f2;color:#765345}
 .assistant-notice.failed-answer .bubble{border-color:#edc9b9;color:#873d2d;background:#fff7f2}
@@ -141,7 +131,7 @@ h1{padding:24px 0 20px;font-size:clamp(27px,3vw,39px);letter-spacing:-.045em;lin
 .send:disabled{background:#df806a;color:#fff}
 .send svg{width:16px;height:16px}
 .home-indicator{margin:7px auto 5px;width:40%;height:4px;border-radius:4px;background:#212124}
-.phone-title,.assistant-followup h3,.suggestions h3{font-size:inherit;line-height:var(--ios-body-leading);font-weight:600}
+.phone-title,.suggestions h3{font-size:inherit;line-height:var(--ios-body-leading);font-weight:600}
 .assistant-result-note .text-action{font-size:inherit;line-height:var(--ios-body-leading)}
 /* Base the smaller scale on the system text size where iOS exposes Dynamic Type. */
 @media (hover:none) and (pointer:coarse){
@@ -170,9 +160,6 @@ h1{padding:24px 0 20px;font-size:clamp(27px,3vw,39px);letter-spacing:-.045em;lin
 .core-state{background:#edf2ef;color:#586f65;padding:2px 5px;border-radius:4px;font-size:11px;white-space:nowrap;flex:none}
 .core-state[data-state="已采集"]{background:#e1f1e7;color:#28694f}
 .core-state[data-state="待补充"]{background:#fff1df;color:#795527}
-.core-turn{margin-top:8px;border:1px solid #d6e6dd;border-radius:8px;background:#f2f8f4;padding:7px 9px;color:#31574e}
-.core-turn-head{display:flex;align-items:center;gap:6px;font-size:12px;flex-wrap:wrap}
-.core-turn-head .core-state{margin-left:auto}.core-turn p{font-size:13px;line-height:1.55;margin-top:4px}
 .field-tier{display:inline-block;background:#edf2ef;color:#577169;border-radius:4px;padding:1px 4px;font-size:10px;white-space:nowrap;margin:1px 0 0 4px;vertical-align:middle}
 .field-tier.core{background:#e1f1e7;color:#28694f}
 .insight-column{display:grid;grid-template-rows:auto minmax(280px,1fr);gap:13px;min-width:0;min-height:var(--work-height);height:var(--work-height)}
@@ -283,10 +270,6 @@ dialog[open]{display:flex;flex-direction:column}dialog::backdrop{background:#142
           </header>
           <div id="messages" class="messages" role="log" aria-label="用药对话" tabindex="0"></div>
           <div class="phone-bottom">
-            <div id="reply-target" class="reply-target" hidden>
-              <span id="reply-label"></span>
-              <button type="button" id="close-reply" aria-label="清除追问回复提示"><svg aria-hidden="true"><use href="#close"/></svg></button>
-            </div>
             <form id="composer" class="composer">
               <label class="sr-only" for="message-input">消息</label>
               <textarea id="message-input" rows="1" maxlength="500" placeholder="咨询奥泽悦用药…"></textarea>
@@ -753,46 +736,6 @@ function linkCoreSupplement(record, run) {
   return linked;
 }
 
-function resolveAnsweredFollowup(run) {
-  if (!run.pendingCore) return;
-  const answered = run.records.some(record=>record.followup_of_message_id === run.pendingCore.messageId &&
-    (run.pendingCore.field_code !== 'EX-12' || record.value?.[run.pendingCore.part] !== undefined));
-  if (!answered) return;
-  const source = control.entries.get(run.pendingCore.messageId);
-  if (source?.followup) {
-    source.followup.answered = true;
-    renderTurn(source);
-  }
-}
-
-function appendCoreQuestion(content, followup) {
-  if (!followup) return;
-  const block = element('section',undefined,'assistant-followup');
-  block.setAttribute('aria-label','补充一下');
-  const reply = element('button','补充信息','followup-reply');
-  reply.type = 'button';
-  reply.dataset.messageId = followup.messageId;
-  reply.hidden = true;
-  reply.addEventListener('click',() => {
-    if (control.activeFollowup?.messageId !== followup.messageId) return;
-    el('message-input').focus({preventScroll:true});
-  });
-  block.append(element('h3','补充一下'),element('p',followup.question),reply);
-  content.append(block);
-}
-
-function showCoreFollowup(run) {
-  if (!run.followup) return null;
-  const {field_code,field_name,question,answered} = run.followup;
-  const note = element('div',undefined,'core-turn');
-  const header = element('div',undefined,'core-turn-head');
-  const status = element('span',answered ? '已补充' : '待回答','core-state');
-  status.dataset.state = answered ? '已采集' : '待补充';
-  header.append(element('strong',field_name),element('code',field_code,'sink'),status);
-  note.append(header,element('p',question));
-  return note;
-}
-
 const patientTagGroups = [["基础与诊断",[["age-recorded","年龄已记录",["DM-BI-02"]],["sex-recorded","性别已记录",["DM-BI-03"]],["diagnosis-recorded","确诊日期已记录",["DX-MV-02"]]]],["奥泽悦用药",[["start-recorded","开始用药时间已记录",["EX-02"]],["regimen-recorded","有服药方案记录",["EX-04","EX-05","EX-06"]],["dose-changed","有剂量调整",["EX-09"]],["missed-dose","有漏服",["EX-12"]],["combined-treatment","联合其他治疗",["EX-17"]],["stop-recorded","有停药记录",["EX-18","EX-19"]]]],["症状与疗效",[["daytime-sleepiness","白天嗜睡或突然睡着",["DX-MV-08","EF-CSA-06"]],["cataplexy","有猝倒",["DX-MV-08","EF-CSA-02","EF-CSA-03","EF-CSA-04","EF-CSA-05"]],["sleep-paralysis","有睡眠瘫痪",["DX-MV-08","EF-CSA-09"]],["other-symptoms","有其他睡病症状",["DX-MV-08"]],["ess-recorded","嗜睡评分已记录",["EF-ESS-01"]],["sleep-time-recorded","夜间睡眠时长已记录",["EF-CSA-11"]],["feels-better","自觉好转",["EF-CSA-13"]],["feels-unchanged","自觉无变化",["EF-CSA-13"]],["feels-worse","自觉加重",["EF-CSA-13"]]]],["安全性与生活",[["discomfort-reported","有不适记录",["AE-AE-02","AE-AE-03","AE-AE-05"]],["discomfort-managed","已处理不适",["AE-AE-02","AE-AE-03","AE-AE-07"]],["discomfort-improved","不适已好转",["AE-AE-02","AE-AE-03","AE-AE-08"]],["insomnia","有失眠",["AE-INS-01"]],["urination-symptoms","有尿频或尿急",["AE-URI-01"]],["driving-incident","驾驶险情或事故",["AE-TA-01"]]]]];
 const presenceOnlyTagFields = ["DM-BI-02","DM-BI-03","DX-MV-02","EX-02","EX-04","EX-05","EX-06","EX-18","EX-19","EF-ESS-01","EF-CSA-03","EF-CSA-04","EF-CSA-05","EF-CSA-11","AE-AE-02","AE-AE-03","AE-AE-05"];
 const tagsEndpoint = new URL(chatEndpoint.replace(/\/chat$/,'/patient-tags'),location.href);
@@ -1086,18 +1029,23 @@ function storeOlderSuggestions(owner, suggestions) {
   owner.querySelector('.message-content').append(history);
 }
 
-function showInlineSuggestions(owner, suggestions) {
+function archiveInlineSuggestions(replacement) {
   const previous = control.suggestionsOwner;
   const previousBox = previous?.querySelector('.message-content > .suggestions');
   if (previousBox && previous?.isConnected) {
-    if (previous === owner) previousBox.remove();
+    if (previous === replacement) previousBox.remove();
     else storeOlderSuggestions(previous,previousBox);
   }
+  control.suggestionsOwner = null;
+}
+
+function showInlineSuggestions(owner, suggestions) {
+  archiveInlineSuggestions(owner);
   owner.querySelector('.message-content').append(suggestions);
   control.suggestionsOwner = owner;
 }
 
-function appendMessage(role, value, messageId, time = new Date(), afterMessageId, suggestions, followup) {
+function appendMessage(role, value, messageId, time = new Date(), afterMessageId, suggestions) {
   const group = element('article', undefined, 'message ' + role);
   if (messageId) group.id = messageId;
   const content = element('div', undefined, 'message-content');
@@ -1112,7 +1060,6 @@ function appendMessage(role, value, messageId, time = new Date(), afterMessageId
     bubble.addEventListener('click', () => locateTurn(messageId));
   }
   content.append(meta, bubble);
-  if (role === 'assistant') appendCoreQuestion(content,followup);
   group.append(content);
   const messages = el('messages');
   const anchor = afterMessageId && el(afterMessageId);
@@ -1231,8 +1178,6 @@ function renderTurn(run) {
     details.append(element('summary', '结构化 JSON'), element('pre', JSON.stringify(records, null, 2)));
     nodes.body.append(details);
   }
-  const activeQuestion = showCoreFollowup(run);
-  if (activeQuestion) nodes.body.append(activeQuestion);
   el('capture-status').textContent = '患者 ' + formatTime.format(time) + '，' + nodes.badge.textContent;
   setCounts();
 }
@@ -1293,30 +1238,13 @@ function locateMessage(messageId) {
 function setBusy(busy) {
   control.busy = busy;
   el('send').disabled = busy || !el('message-input').value.trim();
-  for (const button of document.querySelectorAll('.suggestion,.inline-retry,.followup-reply,.assistant-result-note button')) button.disabled = busy;
+  for (const button of document.querySelectorAll('.suggestion,.inline-retry,.assistant-result-note button')) button.disabled = busy;
 }
 
 function resizeInput() {
   const input = el('message-input');
   input.style.height = '0px';
   input.style.height = input.scrollHeight + 'px';
-}
-
-function syncReplyTarget() {
-  const followup = control.activeFollowup;
-  el('reply-target').hidden = !followup;
-  el('reply-label').textContent = followup ? '补充：' + followup.field_name : '';
-  const messages = el('messages');
-  for (const button of messages.querySelectorAll('.followup-reply')) {
-    button.hidden = button.dataset.messageId !== followup?.messageId;
-  }
-  const activeQuestion = messages.querySelector('.followup-reply:not([hidden])')?.parentElement;
-  if (activeQuestion) {
-    const visible = messages.getBoundingClientRect();
-    const question = activeQuestion.getBoundingClientRect();
-    if (question.top < visible.top) messages.scrollTop += question.top - visible.top - 8;
-    else if (question.bottom > visible.bottom) messages.scrollTop += question.bottom - visible.bottom + 8;
-  }
 }
 
 function beginSession(session, started = new Date()) {
@@ -1330,8 +1258,8 @@ function beginSession(session, started = new Date()) {
   control.coreAsked.clear();
   control.activeFollowup = null;
   control.suggestionsOwner = null;
-  syncReplyTarget();
   control.entries.clear();
+  el('messages').removeAttribute('data-awaiting-followup');
   el('messages').replaceChildren();
   const greetingMessage = appendMessage('assistant',greeting,null,started,null,openingSuggestions(new Set()));
   el('message-input').value = '';
@@ -1358,7 +1286,6 @@ async function persist(run) {
     if (run.generation !== control.generation) return;
     run.status = 'saved';
     renderTurn(run);
-    resolveAnsweredFollowup(run);
     await syncCoreProgress();
   } catch (error) {
     if (run.generation !== control.generation) return;
@@ -1443,7 +1370,8 @@ async function requestAnswer(run) {
         role,content:role === 'assistant' ? content.slice(-500) : content.slice(0,500)
       })),
       core:{complete:[...run.coreSnapshot.complete,...run.coreSnapshot.supplementary],missed:run.coreSnapshot.missed,asked:[...control.coreAsked]},
-      ...(previous ? {pending_core:{field_code:previous.field_code,part:previous.part,asked_on:previous.asked_on,question:previous.question}} : {})
+      ...(previous ? {pending_core:{field_code:previous.field_code,part:previous.part,asked_on:previous.asked_on,question:previous.question}} : {}),
+      ...(run.pendingClarification ? {pending_clarification:{slot:run.pendingClarification.slot,question:run.pendingClarification.question}} : {})
     });
     const result = await askGateway(body,pending.signal);
     if (run.generation !== control.generation) return;
@@ -1476,25 +1404,30 @@ async function handleAnswer(run, result) {
     source:run.initial ? '预设示例' : '患者自报', synthetic:run.initial, recorded_at:run.time.toISOString(),
     schema_version:'v2', engine:result.model, cohort_context:'NT1 · 奥泽悦用药场景', drug, ...linkCoreSupplement(record,run)
   }));
-  run.followup = null;
-  if (followupCodes.has(result.follow_up?.field_code) && typeof result.follow_up.question === 'string') {
+  let followup = typeof result.follow_up?.question === 'string' ? result.follow_up : null;
+  if (followup && followupCodes.has(followup.field_code)) {
     const anchor = run.records.find(row => row.field_code === 'EX-12') ?? run.coreSnapshot?.lastMissed;
-    run.followup = {...result.follow_up,messageId:run.messageId,
-      ...(result.follow_up.field_code === 'EX-12' && anchor ? {anchor} : {})};
+    followup = {...followup,kind:'core',messageId:run.messageId,
+      ...(followup.field_code === 'EX-12' && anchor ? {anchor} : {})};
   }
+  const latest = run.index === control.turns;
+  const assistantText = followup && !result.answer.endsWith(followup.question)
+    ? result.answer + '\n\n' + followup.question : result.answer;
   run.answerBubble?.remove();
-  const suggestions = run.initial ? result.suggestions.map(code=>starterFieldSuggestions[code]) : result.suggestions;
-  run.answerBubble = appendMessage('assistant',result.answer,null,run.time,run.messageId,suggestions,run.followup);
+  if (latest) {
+    el('messages').toggleAttribute('data-awaiting-followup',Boolean(followup));
+    if (followup) archiveInlineSuggestions();
+  }
+  const suggestions = followup ? [] : run.initial ? result.suggestions.map(code=>starterFieldSuggestions[code]) : result.suggestions;
+  run.answerBubble = appendMessage('assistant',assistantText,null,run.time,run.messageId,suggestions);
   if (result.analysis_pending) {
     const notice = element('div',undefined,'assistant-result-note');
     notice.append(action('重试提取',()=>requestAnswer(run)));
     run.answerBubble.querySelector('.message-content').append(notice);
   }
-  if (!run.initial && run.index === control.turns) {
-    control.activeFollowup = run.followup ?? null;
-    syncReplyTarget();
-    if (run.followup) control.coreAsked.add(coreKey(run.followup));
-    const assistantText = run.followup ? result.answer + '\n' + run.followup.question : result.answer;
+  if (!run.initial && latest) {
+    control.activeFollowup = followup;
+    if (followup?.kind === 'core') control.coreAsked.add(coreKey(followup));
     control.history = [...run.history,
       {role:'user',content:run.text},{role:'assistant',content:assistantText}].slice(-6);
   }
@@ -1520,8 +1453,10 @@ function sendMessage(value, options = {}) {
   const batch = initial ? batchStem : batchStem + '-' + idPart().replaceAll('-', '').slice(-8);
   const messageId = 'message-' + batch;
   const time = options.time ?? new Date();
+  const followup = control.activeFollowup;
   const run = {generation, session, index, batch, time, messageId, text, initial,
-    history:[...control.history], pendingCore:control.activeFollowup, records:[], status:'recognizing'};
+    history:[...control.history], pendingCore:followup?.kind === 'core' ? followup : null,
+    pendingClarification:followup?.kind === 'clarification' ? followup : null, records:[], status:'recognizing'};
   appendMessage('patient', text, messageId, time);
   addTurn(run);
   if (!options.preserveDraft) el('message-input').value = '';
@@ -1551,11 +1486,6 @@ el('message-input').addEventListener('keydown', event => {
 });
 el('new-session').addEventListener('click', () => {
   beginSession();
-  el('message-input').focus({preventScroll:true});
-});
-el('close-reply').addEventListener('click',() => {
-  control.activeFollowup = null;
-  syncReplyTarget();
   el('message-input').focus({preventScroll:true});
 });
 el('open-db').addEventListener('click', () => showDatabase());
