@@ -332,12 +332,13 @@ const chatEndpoint = document.querySelector('meta[name="rwd-chat-api"]')?.conten
 const drug = '奥泽悦';
 const initialSession = 'DEMO-ORZEYFUL-V2';
 const greeting = '你好，我是奥泽悦用药助手。可以问我用药问题，也可以说说近期用药后有什么感受。';
-const openingQuestions = ['奥泽悦适合像我这样的 NT1 患者吗？','复诊时，哪些用药经历值得和医生聊？','我白天总是犯困，怎么判断有没有影响日常生活？'];
+const medicationPrecautionsQuestion = '奥泽悦常见的用药注意事项有哪些';
+const openingQuestions = ['奥泽悦适合像我这样的 NT1 患者吗？','复诊时，哪些用药经历值得和医生聊？'];
 
 function openingSuggestions(complete) {
   const priority = ['EX-02','EF-CSA-06','AE-URI-01',...clientCore.keys()];
   const missing = [...new Set(priority)].filter(code=>!complete.has(code)).map(code=>starterFieldSuggestions[code]);
-  return [...missing,...openingQuestions].slice(0,3);
+  return [...missing,...openingQuestions].slice(0,2).concat(medicationPrecautionsQuestion);
 }
 const starter = '我从2026年11月12日开始吃奥泽悦。近7天平均每天白天会突然睡着2次，过去7天猝倒了3次。';
 const nextStarter = '更正一下，近7天平均每天白天突然睡着1次。近7天内我又猝倒了2次。';
@@ -350,7 +351,7 @@ function seedObservation(message, field_code, field_name, value, unit, literal, 
 const sample = {
   answer:'你提到 11 月 12 日开始服药，近 7 天白天仍有突然睡着的情况，还发生了 3 次猝倒。你可以记下每次发作的时间和当时在做什么，方便复诊时和医生沟通。',
   model:'预设示例',
-  suggestions:['EF-CSA-03','EX-05','EF-CSA-13'],
+  suggestions:['EF-CSA-03','EX-05'],
   observations:[
     seedObservation(starter,'EX-02','首次服药日期','2026-11-12','','我从2026年11月12日开始吃奥泽悦',
       {mode:'replace',policy:'replace',period:{key:'baseline',label:'基线'}}),
@@ -363,7 +364,7 @@ const sample = {
 const nextSample = {
   answer:'收到。你更正了近 7 天白天突然睡着的日均次数，还补充了同一周期新增的 2 次猝倒。复诊时可以和医生一起看看近一周发作的变化。',
   model:'预设示例',
-  suggestions:['EF-CSA-03','EF-CSA-04','EF-CSA-13'],
+  suggestions:['EF-CSA-03','EF-CSA-04'],
   observations:[
     seedObservation(nextStarter,'EF-CSA-06','白天不可控睡眠发作次数',1,'次/日','近7天平均每天白天突然睡着1次',
       {mode:'replace',policy:'replace',period:seedPeriod}),
@@ -1418,7 +1419,9 @@ async function handleAnswer(run, result) {
     el('messages').toggleAttribute('data-awaiting-followup',Boolean(followup));
     if (followup) archiveInlineSuggestions();
   }
-  const suggestions = followup ? [] : run.initial ? result.suggestions.map(code=>starterFieldSuggestions[code]) : result.suggestions;
+  const suggestions = followup ? [] : run.initial
+    ? [...result.suggestions.map(code=>starterFieldSuggestions[code]),medicationPrecautionsQuestion]
+    : result.suggestions;
   run.answerBubble = appendMessage('assistant',assistantText,null,run.time,run.messageId,suggestions);
   if (result.analysis_pending) {
     const notice = element('div',undefined,'assistant-result-note');
