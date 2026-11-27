@@ -333,7 +333,8 @@ const drug = '奥泽悦';
 const initialSession = 'DEMO-ORZEYFUL-V2';
 const greeting = '你好，我是奥泽悦用药助手。可以问我用药问题，也可以说说近期用药后有什么感受。';
 const medicationPrecautionsQuestion = '奥泽悦常见的用药注意事项有哪些';
-const openingQuestions = ['奥泽悦适合像我这样的 NT1 患者吗？','复诊时，哪些用药经历值得和医生聊？'];
+const openingQuestions = ['奥泽悦适用于哪些患者？','1 型发作性睡病有哪些常见表现？'];
+const homepageSuggestions = [...openingQuestions,medicationPrecautionsQuestion];
 
 function openingSuggestions(complete) {
   const priority = ['EX-02','EF-CSA-06','AE-URI-01',...clientCore.keys()];
@@ -351,7 +352,7 @@ function seedObservation(message, field_code, field_name, value, unit, literal, 
 const sample = {
   answer:'你提到 11 月 12 日开始服药，近 7 天白天仍有突然睡着的情况，还发生了 3 次猝倒。你可以记下每次发作的时间和当时在做什么，方便复诊时和医生沟通。',
   model:'预设示例',
-  suggestions:['EF-CSA-03','EX-05'],
+  suggestions:homepageSuggestions,
   observations:[
     seedObservation(starter,'EX-02','首次服药日期','2026-11-12','','我从2026年11月12日开始吃奥泽悦',
       {mode:'replace',policy:'replace',period:{key:'baseline',label:'基线'}}),
@@ -364,7 +365,7 @@ const sample = {
 const nextSample = {
   answer:'收到。你更正了近 7 天白天突然睡着的日均次数，还补充了同一周期新增的 2 次猝倒。复诊时可以和医生一起看看近一周发作的变化。',
   model:'预设示例',
-  suggestions:['EF-CSA-03','EF-CSA-04'],
+  suggestions:homepageSuggestions,
   observations:[
     seedObservation(nextStarter,'EF-CSA-06','白天不可控睡眠发作次数',1,'次/日','近7天平均每天白天突然睡着1次',
       {mode:'replace',policy:'replace',period:seedPeriod}),
@@ -650,7 +651,7 @@ async function writeRecords(records) {
 
 const coreFields = [{"field_code":"DM-BI-02","group":"基础与诊断","field_name":"年龄"},{"field_code":"DM-BI-03","group":"基础与诊断","field_name":"性别"},{"field_code":"DX-MV-02","group":"基础与诊断","field_name":"确诊日期"},{"field_code":"DX-MV-08","group":"基础与诊断","field_name":"当前核心症状清单"},{"field_code":"EX-02","group":"奥泽悦用药","field_name":"首次服药日期"},{"field_code":"EX-04","group":"奥泽悦用药","field_name":"每日总剂量"},{"field_code":"EX-05","group":"奥泽悦用药","field_name":"每日服药次数"},{"field_code":"EX-06","group":"奥泽悦用药","field_name":"服药时间点"},{"field_code":"EX-09","group":"奥泽悦用药","field_name":"剂量调整事件"},{"field_code":"EX-12","group":"奥泽悦用药","field_name":"漏服情况"},{"field_code":"EX-17","group":"奥泽悦用药","field_name":"是否联合其他NT1治疗"},{"field_code":"EX-18","group":"奥泽悦用药","field_name":"停药日期"},{"field_code":"EX-19","group":"奥泽悦用药","field_name":"停药原因"},{"field_code":"EF-ESS-01","group":"症状与疗效","field_name":"ESS 总得分"},{"field_code":"EF-CSA-02","group":"症状与疗效","field_name":"猝倒发作次数(近7天)"},{"field_code":"EF-CSA-03","group":"症状与疗效","field_name":"猝倒触发情境"},{"field_code":"EF-CSA-04","group":"症状与疗效","field_name":"猝倒型式与部位"},{"field_code":"EF-CSA-05","group":"症状与疗效","field_name":"猝倒持续时间"},{"field_code":"EF-CSA-06","group":"症状与疗效","field_name":"白天不可控睡眠发作次数"},{"field_code":"EF-CSA-09","group":"症状与疗效","field_name":"睡眠瘫痪频率"},{"field_code":"EF-CSA-11","group":"症状与疗效","field_name":"夜间睡眠时长"},{"field_code":"EF-CSA-13","group":"症状与疗效","field_name":"患者总体改善印象(PGI-I)"},{"field_code":"AE-AE-02","group":"安全性与生活风险","field_name":"不良事件名称"},{"field_code":"AE-AE-03","group":"安全性与生活风险","field_name":"不良事件开始日期"},{"field_code":"AE-AE-05","group":"安全性与生活风险","field_name":"不良事件严重程度"},{"field_code":"AE-AE-07","group":"安全性与生活风险","field_name":"不良事件处理措施"},{"field_code":"AE-AE-08","group":"安全性与生活风险","field_name":"不良事件转归"},{"field_code":"AE-INS-01","group":"安全性与生活风险","field_name":"失眠是否发生"},{"field_code":"AE-URI-01","group":"安全性与生活风险","field_name":"尿频/尿急是否发生"},{"field_code":"AE-TA-01","group":"安全性与生活风险","field_name":"是否发生驾驶/交通事故或险情"}];
 const supplementaryCodes = ["DX-MV-01","DX-MV-07","DX-CC-01","PV-PMH-01","PV-PMH-02","PV-PMH-07","PV-PMH-10"];
-const starterFieldSuggestions = {"DM-BI-02":"我的年龄会影响能不能用奥泽悦吗？","DM-BI-03":"看睡病时，医生为什么会问我的性别？","DX-MV-02":"如果我记不清哪天确诊了 NT1，复诊时怎么办？","DX-MV-08":"我有好几种睡病症状，复诊时该先说哪个？","EX-02":"为什么NT1睡病需要记录自己的用药情况？","EX-04":"我该怎么和医生核对自己每天实际吃了多少奥泽悦？","EX-05":"复诊时，为什么要告诉医生我一天吃几次奥泽悦？","EX-06":"如果我每天吃药的时间不一样，复诊时该怎么说？","EX-09":"如果医生之前帮我调过药量，复诊时该说清哪些变化？","EX-12":"如果我有几天忘了吃药，复诊时该怎么跟医生说？","EX-17":"如果我还在用其他方法治睡病，为什么要一起告诉医生？","EX-18":"如果我以前停过奥泽悦，医生为什么会问是哪天停的？","EX-19":"如果我因为不舒服停过药，复诊时该怎么跟医生说？","EF-ESS-01":"我的嗜睡量表总分，能帮我了解什么？","EF-CSA-02":"如果这几天不止一次突然没力气，怎么数清一周发作了几次？","EF-CSA-03":"如果我一笑就腿软，为什么要留意发作前在做什么？","EF-CSA-04":"如果我发作时只有膝盖发软，复诊时该怎么描述？","EF-CSA-05":"一次猝倒持续多久，对医生判断我的情况有帮助吗？","EF-CSA-06":"如果我白天常常突然睡着，怎么弄清最近一周平均每天有几次？","EF-CSA-09":"如果我醒来时动不了，怎么记清这一周发生了几次？","EF-CSA-11":"如果我晚上醒了好几次，怎么知道自己实际睡了多久？","EF-CSA-13":"我该怎么看服药前后，自己的整体状态有没有变好？","AE-AE-02":"如果吃药后觉得不舒服，怎么跟医生说清自己的感受？","AE-AE-03":"吃药后不舒服，为什么医生会问我是从哪天开始的？","AE-AE-05":"我怎么跟医生说清楚，不舒服已经影响到什么程度？","AE-AE-07":"如果我为了缓解不舒服试过一些办法，复诊时要说吗？","AE-AE-08":"如果不舒服后来好些了，我还需要告诉医生吗？","AE-INS-01":"如果我最近晚上睡不着，复诊时可以怎么说？","AE-URI-01":"如果我最近突然总想上厕所，该留意哪些变化？","AE-TA-01":"如果我开车犯困、差点出事，该怎么和医生谈出行安全？"};
+const starterFieldSuggestions = {"DM-BI-02":"奥泽悦适用于哪些年龄段？","DM-BI-03":"发作性睡病就诊时通常会了解哪些基本信息？","DX-MV-02":"NT1 复诊时通常要准备哪些诊疗资料？","DX-MV-08":"1 型发作性睡病有哪些常见表现？","EX-02":"为什么NT1睡病需要记录自己的用药情况？","EX-04":"奥泽悦的用量可以在哪里核对？","EX-05":"怎样核对奥泽悦的服用频次？","EX-06":"怎样核对奥泽悦的服药时间？","EX-09":"医生通常会根据哪些情况评估是否需要调整用药？","EX-12":"漏服奥泽悦后应该注意什么？","EX-17":"NT1 治疗和日常管理通常包括哪些方面？","EX-18":"停用奥泽悦前要和医生确认哪些事项？","EX-19":"复诊时为什么要说明停药原因？","EF-ESS-01":"嗜睡量表（ESS）有什么用？","EF-CSA-02":"怎样记录猝倒发作的频率？","EF-CSA-03":"猝倒常见的诱因有哪些？","EF-CSA-04":"猝倒发作通常有哪些表现？","EF-CSA-05":"猝倒一般会持续多久？","EF-CSA-06":"白天突然睡着和普通犯困有什么区别？","EF-CSA-09":"什么是睡眠瘫痪？","EF-CSA-11":"如何记录夜间实际睡眠时长？","EF-CSA-13":"怎样观察 NT1 治疗前后的变化？","AE-AE-02":"用药后出现不适时需要注意什么？","AE-AE-03":"用药后出现不适时，为什么要留意发生时间？","AE-AE-05":"就诊时怎样描述不适的程度？","AE-AE-07":"用药后出现不适时，可以向谁咨询？","AE-AE-08":"用药后出现不适时，通常要观察哪些变化？","AE-INS-01":"NT1 患者夜间睡眠不好时可以留意什么？","AE-URI-01":"尿频和尿急有什么区别？","AE-TA-01":"白天容易犯困时，有哪些出行注意事项？"};
 const clientCore = new Map(coreFields.map(field => [field.field_code,field]));
 const followupCodes = new Set([...clientCore.keys(),...supplementaryCodes]);
 const coreGroups = [...new Set(coreFields.map(field=>field.group))];
@@ -1262,7 +1263,8 @@ function beginSession(session, started = new Date()) {
   control.entries.clear();
   el('messages').removeAttribute('data-awaiting-followup');
   el('messages').replaceChildren();
-  const greetingMessage = appendMessage('assistant',greeting,null,started,null,openingSuggestions(new Set()));
+  const firstQuestions = session === initialSession ? homepageSuggestions : openingSuggestions(new Set());
+  const greetingMessage = appendMessage('assistant',greeting,null,started,null,firstQuestions);
   el('message-input').value = '';
   resizeInput();
   el('capture-feed').replaceChildren(element('p', '暂无患者消息', 'empty feed-empty'));
@@ -1270,7 +1272,7 @@ function beginSession(session, started = new Date()) {
   setCounts();
   renderCoreProgress(coreSnapshot([],control.session));
   syncCoreProgress().then(snapshot=>{
-    if (control.suggestionsOwner === greetingMessage) {
+    if (session !== initialSession && control.suggestionsOwner === greetingMessage) {
       showInlineSuggestions(greetingMessage,makeSuggestions(openingSuggestions(snapshot.complete)));
     }
   });
@@ -1419,9 +1421,7 @@ async function handleAnswer(run, result) {
     el('messages').toggleAttribute('data-awaiting-followup',Boolean(followup));
     if (followup) archiveInlineSuggestions();
   }
-  const suggestions = followup ? [] : run.initial
-    ? [...result.suggestions.map(code=>starterFieldSuggestions[code]),medicationPrecautionsQuestion]
-    : result.suggestions;
+  const suggestions = followup ? [] : result.suggestions;
   run.answerBubble = appendMessage('assistant',assistantText,null,run.time,run.messageId,suggestions);
   if (result.analysis_pending) {
     const notice = element('div',undefined,'assistant-result-note');
